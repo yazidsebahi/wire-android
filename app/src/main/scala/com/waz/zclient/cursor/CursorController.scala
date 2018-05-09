@@ -253,11 +253,7 @@ class CursorController(implicit inj: Injector, ctx: Context, evc: EventContext) 
     case CursorMenuItem.More => secondaryToolbarVisible ! true
     case CursorMenuItem.Less => secondaryToolbarVisible ! false
     case AudioMessage =>
-        callController.isCallActive.head.foreach {
-          case true  => showErrorDialog(R.string.calling_ongoing_call_title, R.string.calling_ongoing_call_audio_message)
-          case false => keyboard ! KeyboardState.ExtendedCursor(ExtendedCursorContainer.Type.VOICE_FILTER_RECORDING)
-        }
-
+      checkIfCalling(isVideoMessage = false)(keyboard ! KeyboardState.ExtendedCursor(ExtendedCursorContainer.Type.VOICE_FILTER_RECORDING))
     case Camera =>
         keyboard ! KeyboardState.ExtendedCursor(ExtendedCursorContainer.Type.IMAGES)
     case Ping =>
@@ -272,7 +268,7 @@ class CursorController(implicit inj: Injector, ctx: Context, evc: EventContext) 
     case File =>
       cursorCallback.foreach(_.openFileSharing())
     case VideoMessage =>
-      cursorCallback.foreach(_.captureVideo())
+      checkIfCalling(isVideoMessage = true)(cursorCallback.foreach(_.captureVideo()))
     case Location =>
       val googleAPI = GoogleApiAvailability.getInstance
       if (ConnectionResult.SUCCESS == googleAPI.isGooglePlayServicesAvailable(ctx)) {
@@ -287,6 +283,12 @@ class CursorController(implicit inj: Injector, ctx: Context, evc: EventContext) 
     case _ =>
       // ignore
   }
+
+  private def checkIfCalling(isVideoMessage: Boolean)(f: => Unit) =
+    callController.isCallActive.head.foreach {
+      case true  => showErrorDialog(R.string.calling_ongoing_call_title, if (isVideoMessage) R.string.calling_ongoing_call_video_message else R.string.calling_ongoing_call_audio_message)
+      case false => f
+    }
 }
 
 object CursorController {
