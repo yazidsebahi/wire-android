@@ -19,17 +19,10 @@ package com.waz.zclient.calling.views
 
 import android.content.Context
 import android.util.AttributeSet
-import android.view.{LayoutInflater, TextureView}
+import android.view.LayoutInflater
 import android.widget.{LinearLayout, TextView}
-import com.waz.ZLog.verbose
-import com.waz.ZLog.ImplicitTag.implicitLogTag
-import com.waz.api.VideoSendState
-import com.waz.utils.events.Signal
-import com.waz.zclient.calling.ControlsFragment
 import com.waz.zclient.calling.controllers.CallController
-import com.waz.zclient.ui.calling.RoundedLayout
 import com.waz.zclient.utils.ContextUtils.getString
-import com.waz.zclient.utils.RichView
 import com.waz.zclient.{R, ViewHelper}
 
 class CallingHeader(val context: Context, val attrs: AttributeSet, val defStyleAttr: Int) extends LinearLayout(context, attrs, defStyleAttr) with ViewHelper {
@@ -39,17 +32,8 @@ class CallingHeader(val context: Context, val attrs: AttributeSet, val defStyleA
   private lazy val nameView: TextView = findById(R.id.ttv__calling__header__name)
   private lazy val subtitleView: TextView = findById(R.id.ttv__calling__header__subtitle)
   private lazy val bitRateModeView: TextView = findById(R.id.ttv__calling__header__bitrate)
-  private lazy val roundedLayout = findById[RoundedLayout](R.id.rounded_layout)
 
   private val controller = inject[CallController]
-
-  Signal(controller.showVideoView, controller.isCallEstablished, controller.cameraFailed, controller.videoSendState).map {
-    case (true, true, false, VideoSendState.SEND) => true
-    case _                                        => false
-  }.onUi { visible =>
-    verbose(s"video view visible: $visible")
-    roundedLayout.setVisible(visible)
-  }
 
   LayoutInflater.from(context).inflate(R.layout.calling_header, this, true)
 
@@ -61,6 +45,4 @@ class CallingHeader(val context: Context, val attrs: AttributeSet, val defStyleA
     case true => getString(R.string.audio_message__constant_bit_rate)
     case false => ""
   }.onUi(bitRateModeView.setText)
-
-  def setPreview(view: TextureView) = ControlsFragment.addVideoViewToLayout(roundedLayout, view)
 }

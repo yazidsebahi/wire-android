@@ -246,9 +246,9 @@ class ConversationFragment extends BaseFragment[ConversationFragment.Container] 
           call <- callController.currentCallOpt.head
         } yield (acc, call)).flatMap {
           case (acc, Some(call)) if call.convId == conv.id && call.account == acc => Future.successful(None)
-          case _ => convController.hasOtherParticipants(conv.id).flatMap {
-            case true  => convController.isGroup(conv.id).map(isGroup => Some(if (isGroup) R.menu.conversation_header_menu_audio else R.menu.conversation_header_menu_video))
-            case false => Future.successful(None)
+          case _ => convController.hasOtherParticipants(conv.id).map {
+            case true => Some(R.menu.conversation_header_menu_video)
+            case false => None
           }
         }.foreach { id =>
           toolbar.getMenu.clear()

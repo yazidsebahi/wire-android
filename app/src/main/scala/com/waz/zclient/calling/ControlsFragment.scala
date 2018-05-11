@@ -29,9 +29,7 @@ import android.widget.FrameLayout.LayoutParams
 import android.widget.{FrameLayout, TextView}
 import com.waz.ZLog.ImplicitTag.implicitLogTag
 import com.waz.ZLog.verbose
-import com.waz.api.VideoSendState
-import com.waz.avs.{VideoPreview, VideoRenderer}
-import com.waz.utils.events.{Signal, Subscription}
+import com.waz.utils.events.Subscription
 import com.waz.utils.returning
 import com.waz.zclient.R
 import com.waz.zclient.calling.controllers.CallController
@@ -84,9 +82,6 @@ class ControlsFragment extends FadingControls {
     }
   }
 
-  private lazy val videoView = new VideoRenderer(ctx, false)
-  private lazy val videoPreview = new VideoPreview(ctx)
-
   private var hasFullScreenBeenSet = false //need to make sure we don't set the FullScreen preview on call tear down! never gets set back to false
 
   override def onCreateView(inflater: LayoutInflater, viewGroup: ViewGroup, savedInstanceState: Bundle): View =
@@ -104,7 +99,6 @@ class ControlsFragment extends FadingControls {
     callingMiddle
     callingControls
     messageView
-    videoView
 
     setFadingControls(overlayView, callingHeader, callingMiddle, callingControls)
 
@@ -124,32 +118,6 @@ class ControlsFragment extends FadingControls {
     } yield degraded && video).onChanged.filter(_ == true).onUi(_ => getActivity.finish())
 
     v.onClick(if (controller.showVideoView.currentValue.getOrElse(false)) toggleControlVisibility())
-
-    Signal(controller.showVideoView, controller.isCallActive, controller.isCallEstablished).onUi {
-      case (true, true, false) if !hasFullScreenBeenSet =>
-        verbose("Attaching videoPreview to fullScreen (call active, but not established)")
-        videoPreview.setVisible(true)
-        setFullScreenView(videoPreview)
-        hasFullScreenBeenSet = true
-      case (true, true, true) =>
-        verbose("Attaching videoView to fullScreen and videoPreview to round layout, call active and established")
-        videoView.setVisible(true)
-        setFullScreenView(videoView)
-        videoPreview.setVisible(true)
-        callingHeader.foreach(_.setPreview(videoPreview))
-        extendControlsDisplay()
-        hasFullScreenBeenSet = true //for the rare case the first match never fires
-      case _ =>
-        verbose("hiding video view and preview")
-        videoPreview.setVisible(false)
-        videoView.setVisible(false)
-        stopFadeOut()
-    }
-
-    controller.videoSendState.map {
-      case VideoSendState.DONT_SEND => None
-      case _                        => Some(videoPreview)
-    }.onUi(controller.setVideoPreview)
 
   }
 
@@ -188,7 +156,6 @@ class ControlsFragment extends FadingControls {
     getActivity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
   }
 
-  private def setFullScreenView(view: TextureView) = ControlsFragment.addVideoViewToLayout(getView.asInstanceOf[FrameLayout], view)
 }
 
 object ControlsFragment {

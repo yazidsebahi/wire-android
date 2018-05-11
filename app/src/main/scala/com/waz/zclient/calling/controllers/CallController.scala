@@ -98,6 +98,7 @@ class CallController(implicit inj: Injector, cxt: WireContext, eventContext: Eve
   val isGroupCall       = currentCall.map(_.isGroup)
   val cbrEnabled        = currentCall.map(_.isCbrEnabled)
   val duration          = currentCall.flatMap(_.durationFormatted)
+  val otherUserId       = currentCall.map(_.others.headOption)
 
   val participantIds = currentCall.map(_.others.toVector)
 
