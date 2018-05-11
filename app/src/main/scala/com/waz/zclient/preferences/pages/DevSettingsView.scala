@@ -49,6 +49,9 @@ class DevSettingsViewImpl(context: Context, attrs: AttributeSet, style: Int) ext
   def this(context: Context, attrs: AttributeSet) = this(context, attrs, 0)
   def this(context: Context) = this(context, null, 0)
 
+  val am  = inject[Signal[AccountManager]]
+  val zms = inject[Signal[ZMessaging]]
+
   inflate(R.layout.preferences_dev_layout)
 
   val autoAnswerSwitch = returning(findById[SwitchPreference](R.id.preferences_dev_auto_answer)) { v =>
@@ -65,6 +68,12 @@ class DevSettingsViewImpl(context: Context, attrs: AttributeSet, style: Int) ext
 
   val randomLastIdButton = findById[TextButton](R.id.preferences_dev_generate_random_lastid)
 
+  val slowSyncButton = returning(findById[TextButton](R.id.preferences_dev_slow_sync)) {
+    _.onClickEvent { _ =>
+      zms.head.flatMap(_.sync.performFullSync())
+    }
+  }
+
   val registerAnotherClient = returning(findById[TextButton](R.id.register_another_client)) { v =>
     v.onClickEvent { v =>
       registerClient(v)
@@ -72,7 +81,7 @@ class DevSettingsViewImpl(context: Context, attrs: AttributeSet, style: Int) ext
   }
 
   private def registerClient(v: View, password: Option[Password] = None): Future[Unit] = {
-    inject[Signal[AccountManager]].head.flatMap(_.registerNewClient()).map {
+    am.head.flatMap(_.registerNewClient()).map {
       case Right(Registered(id)) => showToast(s"Registered new client: $id")
       case Right(PasswordMissing) =>
         inject[PasswordController].password.head.map {
