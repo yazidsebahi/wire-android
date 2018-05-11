@@ -18,15 +18,16 @@
 package com.waz.zclient.calling
 
 import android.os.Bundle
+import android.view.ViewGroup.LayoutParams
 import android.view.{LayoutInflater, View, ViewGroup}
-import android.widget.GridLayout
+import android.widget.LinearLayout
 import com.waz.ZLog.ImplicitTag._
-import com.waz.avs.VideoRenderer
+import com.waz.ZLog._
+import com.waz.avs.{VideoPreview, VideoRenderer}
 import com.waz.service.call.Avs.VideoReceiveState
 import com.waz.utils.returning
 import com.waz.zclient.calling.controllers.CallController
 import com.waz.zclient.{FragmentHelper, R}
-import com.waz.ZLog._
 
 class CallingFragment extends FragmentHelper {
 
@@ -34,36 +35,64 @@ class CallingFragment extends FragmentHelper {
 
   lazy val controller = inject[CallController]
 
-  lazy val videoGrid = returning(view[GridLayout](R.id.video_grid)) { vh =>
-    controller.videoReceiveState.map { vrs =>
-      verbose(s"Got ${vrs.size} states")
-      vrs.toSeq.filter(_._2.equals(VideoReceiveState.Started))
-        .map( _._1)
-        .map(userId => new VideoRenderer(getContext, userId.str, false))
-    }.onUi { renderers =>
-      verbose(s"Got ${renderers.size} renderers")
-      vh.foreach { v =>
-        verbose("Removing all views")
-        v.removeAllViews()
-        renderers.zipWithIndex.foreach { case (r, index) =>
-          val (row, col) = index match {
-            case 0 => (0, 0)
-            case 1 => (0, 1)
-            case 2 => (1, 0)
-            case 3 => (1, 1)
+  lazy val videoGrid = returning(view[LinearLayout](R.id.video_grid)) { vh =>
+    (for {
+      sts <- controller.videoReceiveState.map { vrs =>
+        verbose(s"Got ${vrs.size} states")
+        vrs.toSeq.filter(_._2.equals(VideoReceiveState.Started)).map(_._1)
+      }
+    } yield {
+      sts.map(userId => new VideoRenderer(getContext, userId.str, false)) :+ new VideoPreview(getContext)
+    })
+      .onUi { renderers =>
+        verbose(s"Got ${renderers.size} renderers")
+        vh.foreach { v =>
+          verbose("Removing all views")
+          v.removeAllViews()
+          renderers.foreach { r =>
+            r.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, 0, 1f))
+            verbose(s"Adding VideoRenderer to view")
+            v.addView(r)
+            r match {
+              case tv: VideoPreview => controller.setVideoPreview(Some(tv))
+              case _ => //
+            }
           }
-          val params = new GridLayout.LayoutParams()
-          params.width = 0
-          params.height = 0
-          params.rowSpec = GridLayout.spec(row, 1, GridLayout.FILL, 1f)
-          params.columnSpec = GridLayout.spec(col, 1, GridLayout.FILL, 1f)
-          r.setLayoutParams(params)
-          verbose(s"Adding VideoRenderer to view.\nIs Running? ${r.isRunning}")
-          v.addView(r)
         }
       }
-    }
   }
+
+//  lazy val videoGrid = returning(view[GridLayout](R.id.video_grid)) { vh =>
+//    controller.videoReceiveState.map { vrs =>
+//      verbose(s"Got ${vrs.size} states")
+//      vrs.toSeq.filter(_._2.equals(VideoReceiveState.Started))
+//        .map( _._1)
+//        .map(userId => new VideoRenderer(getContext, userId.str, false))
+//    }.onUi { renderers =>
+//      verbose(s"Got ${renderers.size} renderers")
+//      vh.foreach { v =>
+//        verbose("Removing all views")
+//        v.removeAllViews()
+//        renderers.zipWithIndex.foreach { case (r, index) =>
+//          val (color, row, col) = index match {
+//            case 0 => (Color.CYAN, 0, 0)
+//            case 1 => (Color.BLUE, 0, 1)
+//            case 2 => (Color.GREEN, 1, 0)
+//            case 3 => (Color.MAGENTA, 1, 1)
+//          }
+//          val params = new GridLayout.LayoutParams()
+//          params.width = 0
+//          params.height = 0
+//          params.rowSpec = GridLayout.spec(row, 1, GridLayout.FILL, 1f)
+//          params.columnSpec = GridLayout.spec(col, 1, GridLayout.FILL, 1f)
+//          r.setLayoutParams(params)
+//          r.setBackgroundColor(color)
+//          verbose(s"Adding VideoRenderer to view.\nIs Running? ${r.isRunning}")
+//          v.addView(r)
+//        }
+//      }
+//    }
+//  }
 
   override def onCreateView(inflater: LayoutInflater, container: ViewGroup, savedInstanceState: Bundle) =
     inflater.inflate(R.layout.fragment_calling_outer, container, false)

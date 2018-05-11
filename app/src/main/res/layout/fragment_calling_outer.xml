@@ -23,14 +23,22 @@
              android:layout_height="match_parent">
 
 
-    <GridLayout
+    <!--<GridLayout-->
+        <!--android:id="@+id/video_grid"-->
+        <!--android:background="@color/accent_green"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:rowCount="2"-->
+        <!--android:columnCount="2"-->
+        <!--/>-->
+
+    <LinearLayout
         android:id="@+id/video_grid"
-        android:background="@color/accent_green"
+        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:rowCount="2"
-        android:columnCount="1"
-        />
+        android:layout_height="match_parent">
+
+    </LinearLayout>
 
     <FrameLayout
         android:id="@+id/controls_layout"
