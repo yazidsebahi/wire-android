@@ -18,15 +18,16 @@
 package com.waz.zclient.calling
 
 import android.content.Context
-import android.graphics.Color
 import android.os.Bundle
 import android.support.v7.widget.CardView
 import android.view.{LayoutInflater, View, ViewGroup}
 import android.widget.{FrameLayout, GridLayout}
 import com.waz.ZLog.ImplicitTag._
 import com.waz.ZLog._
+import com.waz.api.VideoSendState
 import com.waz.avs.{VideoPreview, VideoRenderer}
 import com.waz.service.call.Avs.VideoReceiveState
+import com.waz.utils.events.Signal
 import com.waz.utils.returning
 import com.waz.zclient.calling.controllers.CallController
 import com.waz.zclient.{FragmentHelper, R}
@@ -42,51 +43,59 @@ class CallingFragment extends FragmentHelper {
 
   private lazy val controlsFragment = ControlsFragment.newInstance
 
-  lazy val controller = inject[CallController]
-  lazy val videoPreview = returning(new VideoPreview2(getContext)) { v =>
+  private lazy val controller = inject[CallController]
+  private lazy val videoPreview = returning(new VideoPreview2(getContext)) { v =>
     controller.setVideoPreview(Some(v))
   }
-  lazy val previewCardView = view[CardView](R.id.preview_card_view)
+  private lazy val previewCardView = view[CardView](R.id.preview_card_view)
+
+  private lazy val isVideoBeingSent = controller.videoSendState.map(_ != VideoSendState.DONT_SEND)
 
   lazy val videoGrid = returning(view[GridLayout](R.id.video_grid)) { vh =>
-    controller.videoReceiveState.map { vrs =>
+    Signal(isVideoBeingSent, controller.videoReceiveState).map { case (ivbs, vrs) =>
       verbose(s"Got ${vrs.size} states")
-      vrs.toSeq.filter(_._2.equals(VideoReceiveState.Started))
+      (ivbs, vrs.toSeq.filter(_._2.equals(VideoReceiveState.Started))
         .map( _._1)
-        .map(userId => new VideoRenderer(getContext, userId.str, false))
-    }.onUi { renderers =>
-      verbose(s"Got ${renderers.size} renderers")
+        .map(userId => new VideoRenderer(getContext, userId.str, false)))
+    }.onUi { case (ivbs, renderers) =>
+      verbose(s"Got ${renderers.size} renderers\nIVBS: $ivbs")
       vh.foreach { v =>
         verbose("Removing all views")
         v.removeAllViews()
-        val renderersWithPreview = if (renderers.size == 1) renderers else videoPreview +: renderers
+        val renderersWithPreview = if (renderers.size == 1 || !ivbs) renderers else videoPreview +: renderers
+        verbose(s"RenderersWithPreview size: ${renderersWithPreview.size}")
 
         previewCardView.foreach { cardView =>
-          if (renderers.size == 1) {
+          if (renderers.size == 1 && ivbs) {
+            verbose("Showing card preview")
             cardView.removeAllViews()
             videoPreview.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
             cardView.addView(videoPreview)
             cardView.setVisibility(View.VISIBLE)
           } else {
+            verbose("Hiding card preview")
             cardView.removeAllViews()
             cardView.setVisibility(View.GONE)
           }
         }
 
         renderersWithPreview.zipWithIndex.foreach { case (r, index) =>
-          val (color, row, col) = index match {
-            case 0 => (Color.CYAN, 0, 0)
-            case 1 => (Color.BLUE, 0, 1)
-            case 2 => (Color.GREEN, 1, 0)
-            case 3 => (Color.MAGENTA, 1, 1)
+          val (row, col, span) = index match {
+            case 0 if !ivbs => (0, 0, 2)
+            case 0 => (0, 0, 1)
+            case 1 if !ivbs && renderersWithPreview.size == 2 => (1, 0, 2)
+            case 1 => (0, 1, 1)
+            case 2 if renderersWithPreview.size == 3 => (1, 0, 2)
+            case 2 => (1, 0, 1)
+            case 3 => (1, 1, 1)
           }
+          verbose(s"Span sizes: ($row, $col, $span)")
           val params = new GridLayout.LayoutParams()
           params.width = 0
           params.height = 0
           params.rowSpec = GridLayout.spec(row, 1, GridLayout.FILL, 1f)
-          params.columnSpec = GridLayout.spec(col, 1, GridLayout.FILL, 1f)
+          params.columnSpec = GridLayout.spec(col, span, GridLayout.FILL, 1f)
           r.setLayoutParams(params)
-          r.setBackgroundColor(color)
           v.addView(r)
         }
       }
