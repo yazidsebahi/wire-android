@@ -20,8 +20,9 @@ package com.waz.zclient.calling
 import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
+import android.support.v7.widget.CardView
 import android.view.{LayoutInflater, View, ViewGroup}
-import android.widget.GridLayout
+import android.widget.{FrameLayout, GridLayout}
 import com.waz.ZLog.ImplicitTag._
 import com.waz.ZLog._
 import com.waz.avs.{VideoPreview, VideoRenderer}
@@ -45,6 +46,7 @@ class CallingFragment extends FragmentHelper {
   lazy val videoPreview = returning(new VideoPreview2(getContext)) { v =>
     controller.setVideoPreview(Some(v))
   }
+  lazy val previewCardView = view[CardView](R.id.preview_card_view)
 
   lazy val videoGrid = returning(view[GridLayout](R.id.video_grid)) { vh =>
     controller.videoReceiveState.map { vrs =>
@@ -57,7 +59,21 @@ class CallingFragment extends FragmentHelper {
       vh.foreach { v =>
         verbose("Removing all views")
         v.removeAllViews()
-        (videoPreview +: renderers).zipWithIndex.foreach { case (r, index) =>
+        val renderersWithPreview = if (renderers.size == 1) renderers else videoPreview +: renderers
+
+        previewCardView.foreach { cardView =>
+          if (renderers.size == 1) {
+            cardView.removeAllViews()
+            videoPreview.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
+            cardView.addView(videoPreview)
+            cardView.setVisibility(View.VISIBLE)
+          } else {
+            cardView.removeAllViews()
+            cardView.setVisibility(View.GONE)
+          }
+        }
+
+        renderersWithPreview.zipWithIndex.foreach { case (r, index) =>
           val (color, row, col) = index match {
             case 0 => (Color.CYAN, 0, 0)
             case 1 => (Color.BLUE, 0, 1)
