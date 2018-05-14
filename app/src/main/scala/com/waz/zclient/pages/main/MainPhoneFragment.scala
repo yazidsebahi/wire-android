@@ -21,6 +21,8 @@ import android.content.Intent
 import android.os.Bundle
 import android.support.v4.app.FragmentManager
 import android.view.{LayoutInflater, View, ViewGroup}
+import com.waz.ZLog.ImplicitTag._
+import com.waz.content.UserPreferences.CrashesAndAnalyticsRequestShown
 import com.waz.model.{ErrorData, Uid}
 import com.waz.service.ZMessaging
 import com.waz.threading.Threading
@@ -40,6 +42,8 @@ import com.waz.zclient.giphy.GiphySharingPreviewFragment
 import com.waz.zclient.messages.UsersController
 import com.waz.zclient.pages.main.conversationlist.ConfirmationFragment
 import com.waz.zclient.pages.main.conversationpager.ConversationPagerFragment
+import com.waz.zclient.tracking.GlobalTrackingController.analyticsPrefKey
+import com.waz.zclient.utils.ContextUtils._
 import com.waz.zclient.views.menus.ConfirmationMenu
 import com.waz.zclient.{ErrorsController, FragmentHelper, OnBackPressedListener, R}
 import net.hockeyapp.android.ExceptionHandler
@@ -97,6 +101,23 @@ class MainPhoneFragment extends FragmentHelper
     giphyController.addObserver(this)
     confirmationController.addConfirmationObserver(this)
     collectionController.addObserver(this)
+
+    zms.flatMap(_.userPrefs(CrashesAndAnalyticsRequestShown).signal).head.flatMap {
+      case false => showConfirmationDialog(
+        getString(R.string.crashes_and_analytics_request_title),
+        getString(R.string.crashes_and_analytics_request_body),
+        R.string.app_entry_dialog_accept,
+        R.string.app_entry_dialog_not_now
+      ).flatMap { resp =>
+        zms.head.flatMap { zms =>
+          for {
+            _ <- zms.userPrefs(CrashesAndAnalyticsRequestShown) := true
+            _ <- zms.prefs(analyticsPrefKey) := resp //we override whatever the global value is on asking the user again
+          } yield {}
+        }
+      }
+      case _ => Future.successful({})
+    }
   }
 
   override def onStop(): Unit = {

@@ -135,6 +135,9 @@
     <string name="people_picker__search_people">PEOPLE</string>
     <string name="people_picker__search_services">SERVICES</string>
 
+    <string name="crashes_and_analytics_request_title">Help us make Wire better</string>
+    <string name="crashes_and_analytics_request_body">Sending usage and crash reports helps us to improve our products and services. We do not use this information for anything else.</string>
+
     <!-- Bots / Integrations / Services -->
     <string name="integrations_picker__section_title">Services</string>
     <string name="integrations_picker__add">Add Service</string>

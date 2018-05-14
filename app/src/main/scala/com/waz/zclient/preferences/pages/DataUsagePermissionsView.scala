@@ -28,7 +28,8 @@ import com.waz.threading.{CancellableFuture, Threading}
 import com.waz.utils.events.Signal
 import com.waz.utils.returning
 import com.waz.zclient.preferences.views.SwitchPreference
-import com.waz.zclient.tracking.{GlobalTrackingController, MixpanelGuard}
+import com.waz.zclient.tracking.GlobalTrackingController.analyticsPrefKey
+import com.waz.zclient.tracking.MixpanelGuard
 import com.waz.zclient.utils.{BackStackKey, ContextUtils}
 import com.waz.zclient.{R, ViewHelper}
 
@@ -50,7 +51,7 @@ class DataUsagePermissionsView(context: Context, attrs: AttributeSet, style: Int
       v.setAlpha(if (enabled) 1.0f else 0.5f)
     }
 
-    v.setPreference(GlobalTrackingController.analyticsPrefKey, global = true)
+    v.setPreference(analyticsPrefKey, global = true)
     v.pref.flatMap(_.signal).onChanged { pref =>
       if (pref) ZMessaging.currentGlobal.trackingService.optIn()
       else ZMessaging.currentGlobal.trackingService.optOut()
