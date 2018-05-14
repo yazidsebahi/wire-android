@@ -19,7 +19,6 @@ package com.waz.zclient.appentry.controllers
 
 import com.waz.utils.events.EventContext
 import com.waz.zclient.{Injectable, Injector}
-import com.waz.znet.ZNetClient.ErrorOr
 
 class CreateTeamController(implicit inj: Injector, eventContext: EventContext) extends Injectable {
 
@@ -30,7 +29,4 @@ class CreateTeamController(implicit inj: Injector, eventContext: EventContext) e
   var teamUserUsername = ""
   var password = ""
   var receiveNewsAndOffers = false
-
-  def setUsername(username: String): ErrorOr[Unit] =
-    throw new NotImplementedError("")
 }

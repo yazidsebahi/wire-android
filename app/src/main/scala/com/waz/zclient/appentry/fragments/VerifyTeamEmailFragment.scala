@@ -30,7 +30,7 @@ import com.waz.zclient.common.views.NumberCodeInput
 import com.waz.zclient.ui.text.TypefaceTextView
 import com.waz.zclient.ui.utils.KeyboardUtils
 import com.waz.zclient.utils.ContextUtils._
-import com.waz.zclient.utils.{ContextUtils, _}
+import com.waz.zclient.utils._
 
 import scala.concurrent.Future
 
