@@ -135,6 +135,9 @@
     <string name="people_picker__search_people">PEOPLE</string>
     <string name="people_picker__search_services">SERVICES</string>
 
+    <string name="receive_news_and_offers_request_title">News and offers</string>
+    <string name="receive_news_and_offers_request_body">We would like to send you more information about our product. To do so, we may use external services like Salesforce and Marketo. You can unsubscribe at any time. We will not keep your data after that.</string>
+
     <string name="crashes_and_analytics_request_title">Help us make Wire better</string>
     <string name="crashes_and_analytics_request_body">Sending usage and crash reports helps us to improve our products and services. We do not use this information for anything else.</string>
 
@@ -1260,6 +1263,7 @@
 
     <string name="app_entry_dialog_accept">ACCEPT</string>
     <string name="app_entry_dialog_cancel">CANCEL</string>
+    <string name="app_entry_dialog_not_now">NOT NOW</string>
     <string name="app_entry_dialog_view">VIEW</string>
 
     <string name="app_entry_email_sent">Email sent</string>

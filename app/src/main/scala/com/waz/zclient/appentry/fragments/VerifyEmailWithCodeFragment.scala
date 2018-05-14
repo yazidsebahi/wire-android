@@ -37,12 +37,14 @@ import com.waz.zclient.appentry.fragments.VerifyEmailWithCodeFragment._
 import com.waz.zclient.controllers.globallayout.IGlobalLayoutController
 import com.waz.zclient.controllers.navigation.Page
 import com.waz.zclient.newreg.views.PhoneConfirmationButton
-import com.waz.zclient.tracking.{EnteredCodeEvent, RegistrationSuccessfulEvent}
 import com.waz.zclient.tracking.GlobalTrackingController._
+import com.waz.zclient.tracking.{EnteredCodeEvent, RegistrationSuccessfulEvent}
 import com.waz.zclient.ui.text.TypefaceEditText
 import com.waz.zclient.ui.utils.KeyboardUtils
 import com.waz.zclient.utils.ContextUtils._
 import com.waz.zclient.utils.DeprecationUtils
+
+import scala.concurrent.Future
 
 object VerifyEmailWithCodeFragment {
   val Tag: String = classOf[VerifyEmailWithCodeFragment].getName
@@ -171,9 +173,21 @@ class VerifyEmailWithCodeFragment extends FragmentHelper with View.OnClickListen
   private def confirmCode(): Unit = {
     activity.enableProgress(true)
     KeyboardUtils.hideKeyboard(getActivity)
-    accountService.register(EmailCredentials(emailAddress, password, Some(confirmationCode)), name).foreach { response =>
-      track(EnteredCodeEvent(SignInMethod(Register, Email), responseToErrorPair(response)))
-      response match {
+
+    for {
+      resp <- accountService.register(EmailCredentials(emailAddress, password, Some(confirmationCode)), name)
+      _    <- resp match {
+        case Right(Some(am)) => showConfirmationDialog(
+          getString(R.string.receive_news_and_offers_request_title),
+          getString(R.string.receive_news_and_offers_request_body),
+          R.string.app_entry_dialog_accept,
+          R.string.app_entry_dialog_not_now
+        ).flatMap(am.setReceivingNewsAndOffers)
+        case _ => Future.successful({})
+      }
+    } yield {
+      track(EnteredCodeEvent(SignInMethod(Register, Email), responseToErrorPair(resp)))
+      resp match {
         case Left(error) =>
           activity.enableProgress(false)
           showErrorDialog(EmailError(error)).map { _ =>

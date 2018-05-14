@@ -30,7 +30,7 @@ import com.waz.zclient.common.views.NumberCodeInput
 import com.waz.zclient.ui.text.TypefaceTextView
 import com.waz.zclient.ui.utils.KeyboardUtils
 import com.waz.zclient.utils.ContextUtils._
-import com.waz.zclient.utils._
+import com.waz.zclient.utils.{ContextUtils, _}
 
 import scala.concurrent.Future
 
@@ -49,7 +49,7 @@ case class VerifyTeamEmailFragment() extends CreateTeamFragment{
   override def onViewCreated(view: View, savedInstanceState: Bundle): Unit = {
     import Threading.Implicits.Ui
 
-    subtitle.foreach(_.setText(ContextUtils.getString(R.string.teams_verify_email_subtitle, createTeamController.teamEmail)))
+    subtitle.foreach(_.setText(getString(R.string.teams_verify_email_subtitle, createTeamController.teamEmail)))
 
     codeField.foreach { codeField =>
       codeField.requestInputFocus()
@@ -58,17 +58,25 @@ case class VerifyTeamEmailFragment() extends CreateTeamFragment{
       codeField.codeText.onUi { code => createTeamController.code = code._1 }
       KeyboardUtils.showKeyboard(context.asInstanceOf[Activity])
       codeField.setOnCodeSet({ case (code, copyPaste) =>
-        for {
+        (for {
           _ <- setButtonsVisible(false)
           resp <- accountsService.verifyEmailAddress(EmailAddress(createTeamController.teamEmail), ConfirmationCode(code))
           _ <- setButtonsVisible(true)
-        } yield resp match {
+        } yield resp).flatMap {
           case Left(error) =>
-            Some(getString(EmailError(error).bodyResource))
+            Future.successful(Some(getString(EmailError(error).bodyResource)))
           case _ =>
-            createTeamController.code = code
-            showFragment(SetNameFragment(), SetNameFragment.Tag)
-            None
+            showConfirmationDialog(
+              getString(R.string.receive_news_and_offers_request_title),
+              getString(R.string.receive_news_and_offers_request_body),
+              R.string.app_entry_dialog_accept,
+              R.string.app_entry_dialog_not_now
+            ).map { confirmed =>
+              createTeamController.receiveNewsAndOffers = confirmed
+              createTeamController.code = code
+              showFragment(SetNameFragment(), SetNameFragment.Tag)
+              None
+            }
         }
       })
     }

@@ -29,19 +29,7 @@ class CreateTeamController(implicit inj: Injector, eventContext: EventContext) e
   var teamUserName = ""
   var teamUserUsername = ""
   var password = ""
-
-  def clearCredentials(): Unit = {
-    teamName = ""
-    teamEmail = ""
-    code = ""
-    teamUserName = ""
-    teamUserUsername = ""
-    password = ""
-  }
-
-  def goTo(): Unit = {
-
-  }
+  var receiveNewsAndOffers = false
 
   def setUsername(username: String): ErrorOr[Unit] =
     throw new NotImplementedError("")

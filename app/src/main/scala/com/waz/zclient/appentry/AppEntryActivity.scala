@@ -198,35 +198,6 @@ class AppEntryActivity extends BaseActivity {
         onEnterApplication(false)
     }
 
-  def onOpenUrl(url: String): Unit =
-    try {
-      val prefixedUrl =
-        if (!url.startsWith(AppEntryActivity.HTTP_PREFIX) && !url.startsWith(AppEntryActivity.HTTPS_PREFIX))
-          AppEntryActivity.HTTP_PREFIX + url
-        else
-          url
-      startActivity(returning(new Intent(Intent.ACTION_VIEW, Uri.parse(prefixedUrl)))(_.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)))
-    }
-    catch {
-      case _: Exception => error(s"Failed to open URL: $url")
-    }
-
-  def onShowCreateTeamFragment(): Unit =
-    withFragmentOpt(TeamNameFragment.Tag) {
-      case Some(_) =>
-      case None => showFragment(TeamNameFragment(), TeamNameFragment.Tag)
-    }
-
-  def onShowSignInPage(): Unit =
-    withFragmentOpt(SignInFragment.Tag) {
-      case Some(_) =>
-      case None =>
-        showFragment(new SignInFragment, SignInFragment.Tag)
-    }
-
-  def onShowFirstLaunchPage(): Unit =
-    showFragment(FirstLaunchAfterLoginFragment(), FirstLaunchAfterLoginFragment.Tag)
-
   def onEnterApplication(openSettings: Boolean, clientRegState: Option[ClientRegistrationState] = None): Unit = {
     getControllerFactory.getVerificationController.finishVerification()
     val intent = Intents.EnterAppIntent(openSettings)(this)
