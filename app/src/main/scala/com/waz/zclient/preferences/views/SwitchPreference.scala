@@ -31,7 +31,7 @@ import com.waz.ZLog.ImplicitTag._
 
 trait Switchable {
   val onCheckedChange: EventStream[Boolean]
-  def setChecked(checked: Boolean): Unit
+  def setChecked(checked: Boolean, disableListener: Boolean = false): Unit
 }
 
 class SwitchPreference(context: Context, attrs: AttributeSet, style: Int) extends TextButton(context, attrs, style) with Switchable with ViewHelper {
@@ -59,20 +59,24 @@ class SwitchPreference(context: Context, attrs: AttributeSet, style: Int) extend
 
   override val onCheckedChange = EventStream[Boolean]()
 
-  pref.flatMap(_.signal).on(Threading.Ui) { setChecked }
-  onCheckedChange.on(Threading.Ui) { value =>
+  pref.flatMap(_.signal).onUi(setChecked(_))
+
+  onCheckedChange.onUi { value =>
     pref.head.map(_.update(value))(Threading.Ui)
   }
+
   keyAttr.foreach{ key =>
     prefInfo ! PrefInfo(PrefKey[Boolean](key, customDefault = false), global = false)
   }
 
-  switch.setOnCheckedChangeListener(new OnCheckedChangeListener {
+  val checkChangeListener = new OnCheckedChangeListener {
     override def onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) = {
       pref.head.map(_.update(isChecked))(Threading.Ui)
       onCheckedChange ! isChecked
     }
-  })
+  }
+
+  switch.setOnCheckedChangeListener(checkChangeListener)
 
   def setDisabled(disabled: Boolean) = {
     setEnabled(!disabled)
@@ -80,8 +84,10 @@ class SwitchPreference(context: Context, attrs: AttributeSet, style: Int) extend
     title.foreach(_.setAlpha(if (disabled) 0.5f else 1f))
   }
 
-  override def setChecked(checked: Boolean): Unit = {
+  override def setChecked(checked: Boolean, disableListener: Boolean = false): Unit = {
+    if (disableListener) switch.setOnCheckedChangeListener(null)
     switch.setChecked(checked)
+    if (disableListener) switch.setOnCheckedChangeListener(checkChangeListener)
   }
 
   def setPreference(prefKey: PrefKey[Boolean], global: Boolean = false): Unit = {
