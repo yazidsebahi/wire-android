@@ -89,8 +89,9 @@ class CallController(implicit inj: Injector, cxt: WireContext, eventContext: Eve
   val isCallIncoming    = callStateOpt.map(_.contains(OtherCalling))
 
   val isMuted           = currentCall.map(_.muted)
-  val isVideoCall       = currentCall.map{ c =>
-    c.videoSendState != VideoSendState.DONT_SEND || c.videoReceiveState != VideoReceiveState.Stopped
+  val startedAsVideo    = currentCall.map(_.isVideoCall)
+  val isVideoCall       = currentCall.map { c =>
+    c.videoSendState != VideoSendState.DONT_SEND || c.videoReceiveState.exists { case (_, st) => st != VideoReceiveState.Stopped }
   }
 
   val videoSendState    = currentCall.map(_.videoSendState)
