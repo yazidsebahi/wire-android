@@ -33,7 +33,7 @@ import com.waz.utils._
 import com.waz.utils.events._
 import com.waz.zclient.calling.CallingActivity
 import com.waz.zclient.calling.controllers.CallController.CallParticipantInfo
-import com.waz.zclient.common.controllers.SoundController
+import com.waz.zclient.common.controllers.{SoundController, ThemeController}
 import com.waz.zclient.conversation.ConversationController
 import com.waz.zclient.utils.ContextUtils._
 import com.waz.zclient.utils.{DeprecationUtils, LayoutSpec, UiStorage, UserSignal}
@@ -122,6 +122,14 @@ class CallController(implicit inj: Injector, cxt: WireContext, eventContext: Eve
           u.isVerified,
           videoStates.get(u.id).contains(VideoState.Started))
       }
+
+  val darkTheme = isVideoCall.flatMap {
+    case true => Signal.const(true)
+    case _ => inject[ThemeController].darkThemeSet.map {
+      case true  => true
+      case false => false
+    }
+  }
 
   val flowManager = callingZms.map(_.flowmanager)
 

@@ -69,10 +69,9 @@ class CallParticipantsAdapter(implicit context: Context, eventContext: EventCont
     notifyDataSetChanged()
   }
 
-  Signal(callController.isVideoCall, themeController.darkThemeSet).map{
-    case (true, _)      => Theme.TransparentDark
-    case (false, true)  => Theme.TransparentDark
-    case (false, false) => Theme.TransparentLight
+  callController.darkTheme.map {
+    case true => Theme.TransparentDark
+    case _    => Theme.TransparentLight
   }.onUi { theme =>
     this.theme = theme
     notifyDataSetChanged()
@@ -134,18 +133,15 @@ case class ShowAllButtonViewHolder(view: View) extends ViewHolder(view) {
     setTheme(theme)
   }
 
-  private def setTheme(theme: Theme): Unit = theme match {
-    case Light =>
-      nameView.setTextColor(getColor(R.color.wire__text_color_primary_light_selector))
-      view.setBackgroundColor(getColor(R.color.background_light))
-    case Dark =>
-      nameView.setTextColor(getColor(R.color.wire__text_color_primary_dark_selector))
-      view.setBackgroundColor(getColor(R.color.background_dark))
-    case TransparentDark =>
-      nameView.setTextColor(getColor(R.color.wire__text_color_primary_dark_selector))
-      view.setBackground(getDrawable(R.drawable.selector__transparent_button))
-    case TransparentLight =>
-      nameView.setTextColor(getColor(R.color.wire__text_color_primary_light_selector))
-      view.setBackground(getDrawable(R.drawable.selector__transparent_button))
+
+  private def setTheme(theme: Theme): Unit = {
+    val color = if (Set(Light, TransparentLight).contains(theme)) R.color.wire__text_color_primary_light_selector else R.color.wire__text_color_primary_dark_selector
+    nameView.setTextColor(getColor(color))
+
+    theme match {
+      case Light => view.setBackgroundColor(getColor(R.color.background_light))
+      case Dark  => view.setBackgroundColor(getColor(R.color.background_dark))
+      case _     => view.setBackground(getDrawable(R.drawable.selector__transparent_button))
+    }
   }
 }
