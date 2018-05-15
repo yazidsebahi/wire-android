@@ -96,6 +96,9 @@ class CallController(implicit inj: Injector, cxt: WireContext, eventContext: Eve
 
   val videoSendState    = currentCall.map(_.videoSendState)
   val videoReceiveState = currentCall.map(_.videoReceiveState)
+  val allVideoReceiveState = Signal(callingZms.map(_.selfUserId), videoReceiveState, videoSendState).map {
+    case (selfId, others, self) => others.updated(selfId, self)
+  }
   val isGroupCall       = currentCall.map(_.isGroup)
   val cbrEnabled        = currentCall.map(_.isCbrEnabled)
   val duration          = currentCall.flatMap(_.durationFormatted)

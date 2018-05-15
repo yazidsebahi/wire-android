@@ -18,24 +18,24 @@
 package com.waz.zclient.calling
 
 import android.content.Context
-import android.graphics.{Color, Matrix}
 import android.graphics.drawable.ColorDrawable
+import android.graphics.{Color, Matrix}
 import android.os.Bundle
 import android.support.v7.widget.{CardView, GridLayout}
 import android.view.{LayoutInflater, View, ViewGroup}
-import android.widget.{FrameLayout, ImageView}
+import android.widget.{FrameLayout, ImageView, TextView}
 import com.waz.ZLog.ImplicitTag._
 import com.waz.ZLog._
 import com.waz.service.call.Avs.VideoState
 import com.waz.avs.{VideoPreview, VideoRenderer}
 import com.waz.model.{Dim2, UserId}
-import com.waz.service.call.Avs.VideoState
 import com.waz.utils.events.Signal
 import com.waz.utils.returning
 import com.waz.zclient.calling.controllers.CallController
 import com.waz.zclient.common.views.BackgroundDrawable
 import com.waz.zclient.common.views.ImageController.{ImageSource, WireImage}
 import com.waz.zclient.ui.utils.ColorUtils
+import com.waz.zclient.utils.RichView
 import com.waz.zclient.{FragmentHelper, R, ViewHelper}
 
 class VideoPreview2(context: Context) extends VideoPreview(context) {
@@ -73,8 +73,8 @@ class VideoPreview2(context: Context) extends VideoPreview(context) {
   }
 }
 
-class PausedView(context: Context, userId: UserId) extends FrameLayout(context, null, 0) with ViewHelper {
-  private lazy val controller = inject[CallController]
+abstract class UserVideoView(context: Context, val userId: UserId) extends FrameLayout(context, null, 0) with ViewHelper {
+  protected lazy val controller: CallController = inject[CallController]
 
   private val blackLevel = 0.58f
 
@@ -85,14 +85,40 @@ class PausedView(context: Context, userId: UserId) extends FrameLayout(context, 
     Some(picture) <- z.users.userSignal(userId).map(_.picture)
   } yield WireImage(picture)
 
-  private val imageView = findById[ImageView](R.id.image_view)
+  protected val imageView = findById[ImageView](R.id.image_view)
   imageView.setBackground(new BackgroundDrawable(pictureId, getContext, Dim2(getWidth, getHeight)))
   imageView.setImageDrawable(new ColorDrawable(ColorUtils.injectAlpha(blackLevel, Color.BLACK)))
+
+  protected val pausedText = findById[TextView](R.id.paused_text_view)
+
+  addView(returning(videoView)(_.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))))
+
+  controller.allVideoReceiveState.map(_.get(userId)).collect {
+    case Some(VideoState.Started) => true
+    case Some(VideoState.Paused) => false
+  }.onUi { hasVideo =>
+    pausedText.setVisible(!hasVideo)
+    imageView.setVisible(!hasVideo)
+    videoView.setVisible(hasVideo)
+  }
 
   override def onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int): Unit = {
     super.onLayout(changed, left, top, right, bottom)
     if (changed) imageView.setBackground(new BackgroundDrawable(pictureId, getContext, Dim2(right - left, bottom - top)))
   }
+
+  val videoView: View
+}
+
+class SelfVideoView(context: Context, userId: UserId) extends UserVideoView(context, userId) {
+  pausedText.setText(R.string.empty_string)
+  override lazy val videoView: View = returning(new VideoPreview2(getContext)) { v =>
+    controller.setVideoPreview(Some(v))
+  }
+}
+
+class OtherVideoView(context: Context, userId: UserId) extends UserVideoView(context, userId) {
+  override lazy val videoView: View = new VideoRenderer(getContext, userId.str, false)
 }
 
 class CallingFragment extends FragmentHelper {
@@ -100,49 +126,64 @@ class CallingFragment extends FragmentHelper {
   private lazy val controlsFragment = ControlsFragment.newInstance
 
   private lazy val controller = inject[CallController]
-  private lazy val videoPreview = returning(new VideoPreview2(getContext)) { v =>
-    controller.setVideoPreview(Some(v))
-  }
   private lazy val previewCardView = view[CardView](R.id.preview_card_view)
 
-  private lazy val isVideoBeingSent = controller.videoSendState.map(_ != VideoState.Stopped)
+  private var viewMap = Map[UserId, UserVideoView]()
 
-  lazy val videoGrid = returning(view[GridLayout](R.id.video_grid)) { vh =>
-    Signal(isVideoBeingSent, controller.videoReceiveState).map { case (ivbs, vrs) =>
-      verbose(s"Got ${vrs.size} states")
-      (ivbs, vrs.toSeq.collect {
-        case (userId, VideoState.Started) => new VideoRenderer(getContext, userId.str, false)
-        case (userId, VideoState.Stopped) => new PausedView(getContext, userId)
-      })
-    }.onUi { case (ivbs, renderers) =>
-      verbose(s"Got ${renderers.size} renderers\nIVBS: $ivbs")
+  private lazy val videoGrid = returning(view[GridLayout](R.id.video_grid)) { vh =>
+    Signal(controller.allVideoReceiveState, controller.callingZms.map(_.selfUserId)).onUi { case (vrs, selfId) =>
+
+      def createView(userId: UserId): UserVideoView = returning {
+        if (controller.callingZms.currentValue.map(_.selfUserId).contains(userId))
+          new SelfVideoView(getContext, userId)
+        else
+          new OtherVideoView(getContext, userId)
+      } { v =>
+        viewMap = viewMap.updated(userId, v)
+      }
+
+      val isVideoBeingSent = vrs.get(selfId).contains(VideoState.Started)
+
       vh.foreach { v =>
-        verbose("Removing all views")
-        v.removeAllViews()
-        val renderersWithPreview = if (renderers.size == 1 || !ivbs) renderers else videoPreview +: renderers
-        verbose(s"RenderersWithPreview size: ${renderersWithPreview.size}")
+        val views = vrs.toSeq.collect {
+          case (userId, VideoState.Started | VideoState.Paused | VideoState.BadConnection) => userId
+        }.map { uId => viewMap.getOrElse(uId, createView(uId))}
 
-        previewCardView.foreach { cardView =>
-          if (renderers.size == 1 && ivbs) {
-            verbose("Showing card preview")
-            cardView.removeAllViews()
-            videoPreview.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
-            cardView.addView(videoPreview)
-            cardView.setVisibility(View.VISIBLE)
-          } else {
-            verbose("Hiding card preview")
-            cardView.removeAllViews()
-            cardView.setVisibility(View.GONE)
+        v.removeAllViews()
+
+        viewMap.get(selfId).foreach { selfView =>
+          previewCardView.foreach { cardView =>
+            if (views.size == 2 && isVideoBeingSent) {
+              verbose("Showing card preview")
+              cardView.removeAllViews()
+              v.removeView(selfView)
+              selfView.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
+              cardView.addView(selfView)
+              cardView.setVisibility(View.VISIBLE)
+            } else {
+              verbose("Hiding card preview")
+              cardView.removeAllViews()
+              cardView.setVisibility(View.GONE)
+            }
           }
         }
 
-        renderersWithPreview.zipWithIndex.foreach { case (r, index) =>
+        val gridViews = views.filter {
+          case _:SelfVideoView if views.size == 2 && isVideoBeingSent => false
+          case _:SelfVideoView if views.size > 1 && !isVideoBeingSent => false
+          case _ => true
+        }.sortWith {
+          case (_:SelfVideoView, _) => true
+          case (v1, v2) => v1.userId.str.hashCode > v2.userId.str.hashCode
+        }
+
+        gridViews.zipWithIndex.foreach { case (r, index) =>
           val (row, col, span) = index match {
-            case 0 if !ivbs => (0, 0, 2)
+            case 0 if !isVideoBeingSent && gridViews.size == 2 => (0, 0, 2)
             case 0 => (0, 0, 1)
-            case 1 if !ivbs && renderersWithPreview.size == 2 => (1, 0, 2)
+            case 1 if !isVideoBeingSent && gridViews.size == 2 => (1, 0, 2)
             case 1 => (0, 1, 1)
-            case 2 if renderersWithPreview.size == 3 => (1, 0, 2)
+            case 2 if gridViews.size == 3 => (1, 0, 2)
             case 2 => (1, 0, 1)
             case 3 => (1, 1, 1)
           }
@@ -153,8 +194,20 @@ class CallingFragment extends FragmentHelper {
           params.rowSpec = GridLayout.spec(row, 1, GridLayout.FILL, 1f)
           params.columnSpec = GridLayout.spec(col, span, GridLayout.FILL, 1f)
           r.setLayoutParams(params)
-          v.addView(r)
+
+          if (r.getParent == null)
+            v.addView(r)
         }
+/*
+        val viewsToRemove = viewMap.filter {
+          case (uid, selfView) if uid == selfId => !gridViews.contains(selfView)
+          case (uId, _) => !vrs.keys.toSet.contains(uId)
+        }
+        viewsToRemove.foreach { case (_, view) =>
+          v.removeView(view)
+        }
+        viewMap = viewMap.filter { case (uId, _) => vrs.keys.toSet.contains(uId) }
+        */
       }
     }
   }
@@ -180,6 +233,10 @@ class CallingFragment extends FragmentHelper {
     }
   }
 
+  override def onDestroyView(): Unit = {
+    super.onDestroyView()
+    viewMap = Map()
+  }
 }
 
 object CallingFragment {
