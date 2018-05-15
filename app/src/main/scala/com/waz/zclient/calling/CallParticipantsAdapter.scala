@@ -24,7 +24,7 @@ import android.view.{LayoutInflater, View, ViewGroup}
 import android.widget.ImageView
 import com.waz.ZLog.ImplicitTag.implicitLogTag
 import com.waz.utils.events._
-import com.waz.zclient.R
+import com.waz.zclient.{Injectable, Injector, R}
 import com.waz.zclient.ViewHelper.inflate
 import com.waz.zclient.calling.controllers.CallController
 import com.waz.zclient.calling.controllers.CallController.CallParticipantInfo
@@ -37,12 +37,7 @@ import com.waz.zclient.ui.text.TypefaceTextView
 import com.waz.zclient.utils.ContextUtils.{getColor, getDrawable, getString, getStyledColor}
 import com.waz.zclient.utils.RichView
 
-class CallParticipantsAdapter(context: Context,
-                              themeController: ThemeController,
-                              callController: CallController,
-                              onShowAllClicked: SourceStream[Unit])
-                             (implicit eventContext: EventContext)
-  extends RecyclerView.Adapter[ViewHolder] {
+class CallParticipantsAdapter(implicit context: Context, eventContext: EventContext, inj: Injector) extends RecyclerView.Adapter[ViewHolder] with Injectable {
 
   import CallParticipantsAdapter._
 
@@ -50,6 +45,11 @@ class CallParticipantsAdapter(context: Context,
   private var numOfParticipants = 0
   private var maxRows = Option.empty[Int]
   private var theme: Theme = Theme.TransparentDark
+
+  val onShowAllClicked = EventStream[Unit]()
+
+  val callController  = inject[CallController]
+  val themeController = inject[ThemeController]
 
   def setMaxRows(maxRows: Int): Unit = {
     this.maxRows =

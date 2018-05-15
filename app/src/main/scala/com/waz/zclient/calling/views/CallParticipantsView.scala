@@ -21,19 +21,15 @@ import android.content.Context
 import android.support.v7.widget.LinearLayoutManager.VERTICAL
 import android.support.v7.widget.{LinearLayoutManager, RecyclerView}
 import android.util.AttributeSet
-import com.waz.utils.events.EventStream
 import com.waz.zclient.ViewHelper
 import com.waz.zclient.calling.CallParticipantsAdapter
-import com.waz.zclient.calling.controllers.CallController
-import com.waz.zclient.common.controllers.ThemeController
 
 class CallParticipantsView(val context: Context, val attrs: AttributeSet, val defStyleAttr: Int) extends RecyclerView(context, attrs, defStyleAttr) with ViewHelper {
   def this(context: Context, attrs: AttributeSet) = this(context, attrs, 0)
   def this(context: Context) = this(context, null)
 
-  val onShowAllClicked = EventStream[Unit]()
-
-  private val adapter = new CallParticipantsAdapter(context, inject[ThemeController], inject[CallController], onShowAllClicked)
+  private val adapter = new CallParticipantsAdapter()
+  val onShowAllClicked = adapter.onShowAllClicked
 
   setLayoutManager(new LinearLayoutManager(context, VERTICAL, false))
   setAdapter(adapter)
