@@ -22,11 +22,13 @@ import android.graphics._
 import android.graphics.drawable.ColorDrawable
 import android.util.AttributeSet
 import android.widget.ImageView
+import com.waz.model.Dim2
 import com.waz.service.ZMessaging
 import com.waz.utils.events.Signal
 import com.waz.zclient.ViewHelper
 import com.waz.zclient.ui.utils.ColorUtils
 import com.waz.zclient.common.views.ImageController.{ImageSource, WireImage}
+import com.waz.zclient.utils.ViewUtils
 
 class BackgroundImageView(val context: Context, val attrs: AttributeSet, val defStyleAttr: Int) extends ImageView(context, attrs, defStyleAttr) with ViewHelper {
   def this(context: Context, attrs: AttributeSet) = this(context, attrs, 0)
@@ -40,6 +42,7 @@ class BackgroundImageView(val context: Context, val attrs: AttributeSet, val def
     Some(picture) <- z.users.selfUser.map(_.picture)
   } yield WireImage(picture)
 
-  setBackground(new BackgroundDrawable(pictureId, getContext))
+  private val configuration = context.getResources.getConfiguration
+  setBackground(new BackgroundDrawable(pictureId, getContext, Dim2(ViewUtils.toPx(context, configuration.screenWidthDp), ViewUtils.toPx(context, configuration.screenHeightDp))))
   setImageDrawable(new ColorDrawable(ColorUtils.injectAlpha(blackLevel, Color.BLACK)))
 }
