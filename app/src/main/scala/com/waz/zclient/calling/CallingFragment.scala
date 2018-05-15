@@ -18,7 +18,7 @@
 package com.waz.zclient.calling
 
 import android.content.Context
-import android.graphics.Color
+import android.graphics.{Color, Matrix}
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.support.v7.widget.{CardView, GridLayout}
@@ -39,9 +39,37 @@ import com.waz.zclient.ui.utils.ColorUtils
 import com.waz.zclient.{FragmentHelper, R, ViewHelper}
 
 class VideoPreview2(context: Context) extends VideoPreview(context) {
+
+  private val aspectRatio = 1.3333334F
+  private val orientation = 90
+
   override def onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int): Unit = {
     setMeasuredDimension(View.getDefaultSize(getSuggestedMinimumWidth, widthMeasureSpec),
       View.getDefaultSize(getSuggestedMinimumHeight, heightMeasureSpec))
+  }
+
+  setOpaque(false)
+
+  override def onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int): Unit = {
+    super.onLayout(changed, l, t, r, b)
+    val m = new Matrix
+
+    val vWidth = (r - l).toFloat
+    val vHeight = (b - t).toFloat
+
+    val vAspRatio = vWidth.toFloat / vHeight.toFloat
+
+    val tAspRatio = if (orientation % 180 == 0) this.aspectRatio else 1.0F / this.aspectRatio
+
+    val scaleX = Math.max(1f, tAspRatio / vAspRatio)
+    val scaleY = Math.max(1f, vAspRatio / tAspRatio)
+
+    val dx = - (scaleX * vWidth - vWidth) / 2
+    val dy = - (scaleY * vHeight - vHeight) / 2
+
+    m.postTranslate(dx, dy)
+    m.setScale(scaleX, scaleY)
+    setTransform(m)
   }
 }
 
