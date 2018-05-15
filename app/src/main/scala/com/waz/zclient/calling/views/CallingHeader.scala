@@ -38,9 +38,9 @@ class CallingHeader(val context: Context, val attrs: AttributeSet, val defStyleA
 
   private val controller = inject[CallController]
 
-  lazy val nameView: TextView = findById(R.id.ttv__calling__header__name)
-  lazy val subtitleView: TextView = findById(R.id.ttv__calling__header__subtitle)
-  lazy val bitRateModeView: TextView = findById(R.id.ttv__calling__header__bitrate)
+  lazy val nameView        = findById[TextView](R.id.ttv__calling__header__name)
+  lazy val subtitleView    = findById[TextView](R.id.ttv__calling__header__subtitle)
+  lazy val bitRateModeView = findById[TextView](R.id.ttv__calling__header__bitrate)
 
   private lazy val roundedLayout = findById[RoundedLayout](R.id.rounded_layout)
   lazy val closeButton = findById[GlyphButton](R.id.calling_header_close)

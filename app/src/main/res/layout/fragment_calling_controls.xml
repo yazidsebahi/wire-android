@@ -81,7 +81,10 @@
         <com.waz.zclient.calling.views.CallingHeader
             android:id="@+id/calling_header"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="@dimen/calling__self_video_preview__dimension"
+            android:layout_marginLeft="@dimen/wire__padding__regular"
+            android:layout_marginRight="@dimen/wire__padding__regular"
+            android:orientation="horizontal"
             android:layout_gravity="top|center"
             android:layout_marginTop="@dimen/wire__padding__huge" />
 
