@@ -26,10 +26,10 @@ import android.view.{LayoutInflater, View, ViewGroup}
 import android.widget.{FrameLayout, ImageView}
 import com.waz.ZLog.ImplicitTag._
 import com.waz.ZLog._
-import com.waz.api.VideoSendState
+import com.waz.service.call.Avs.VideoState
 import com.waz.avs.{VideoPreview, VideoRenderer}
 import com.waz.model.{Dim2, UserId}
-import com.waz.service.call.Avs.VideoReceiveState
+import com.waz.service.call.Avs.VideoState
 import com.waz.utils.events.Signal
 import com.waz.utils.returning
 import com.waz.zclient.calling.controllers.CallController
@@ -105,14 +105,14 @@ class CallingFragment extends FragmentHelper {
   }
   private lazy val previewCardView = view[CardView](R.id.preview_card_view)
 
-  private lazy val isVideoBeingSent = controller.videoSendState.map(_ != VideoSendState.DONT_SEND)
+  private lazy val isVideoBeingSent = controller.videoSendState.map(_ != VideoState.Stopped)
 
   lazy val videoGrid = returning(view[GridLayout](R.id.video_grid)) { vh =>
     Signal(isVideoBeingSent, controller.videoReceiveState).map { case (ivbs, vrs) =>
       verbose(s"Got ${vrs.size} states")
       (ivbs, vrs.toSeq.collect {
-        case (userId, VideoReceiveState.Started) => new VideoRenderer(getContext, userId.str, false)
-        case (userId, VideoReceiveState.Stopped) => new PausedView(getContext, userId)
+        case (userId, VideoState.Started) => new VideoRenderer(getContext, userId.str, false)
+        case (userId, VideoState.Stopped) => new PausedView(getContext, userId)
       })
     }.onUi { case (ivbs, renderers) =>
       verbose(s"Got ${renderers.size} renderers\nIVBS: $ivbs")

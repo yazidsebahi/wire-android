@@ -25,13 +25,14 @@ import com.waz.service.call.CallInfo
 import com.waz.service.call.CallInfo.CallState.{OtherCalling, SelfCalling, SelfConnected, SelfJoining}
 import com.waz.utils.events.Signal
 import com.waz.zclient.calling.controllers.CallController
-import com.waz.zclient.calling.views.CallingMiddleLayout.CallDisplay
 import com.waz.zclient.common.views.ChatheadView
 import com.waz.zclient.utils.ContextUtils.getDimenPx
 import com.waz.zclient.utils.RichView
 import com.waz.zclient.{R, ViewHelper}
 
 class CallingMiddleLayout(val context: Context, val attrs: AttributeSet, val defStyleAttr: Int) extends LinearLayout(context, attrs, defStyleAttr) with ViewHelper {
+  import CallingMiddleLayout.CallDisplay
+
   def this(context: Context, attrs: AttributeSet) = this(context, attrs, 0)
   def this(context: Context) =  this(context, null)
 

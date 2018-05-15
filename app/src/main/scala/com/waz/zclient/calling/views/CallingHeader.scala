@@ -21,9 +21,7 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.{LinearLayout, TextView}
-import com.waz.ZLog.ImplicitTag.implicitLogTag
-import com.waz.ZLog.verbose
-import com.waz.api.VideoSendState
+import com.waz.service.call.Avs.VideoState
 import com.waz.utils.events.Signal
 import com.waz.zclient.calling.controllers.CallController
 import com.waz.zclient.common.views.GlyphButton
@@ -31,6 +29,8 @@ import com.waz.zclient.ui.calling.RoundedLayout
 import com.waz.zclient.utils.ContextUtils.getString
 import com.waz.zclient.utils.RichView
 import com.waz.zclient.{R, ViewHelper}
+import com.waz.ZLog.ImplicitTag._
+import com.waz.ZLog._
 
 class CallingHeader(val context: Context, val attrs: AttributeSet, val defStyleAttr: Int) extends LinearLayout(context, attrs, defStyleAttr) with ViewHelper {
   def this(context: Context, attrs: AttributeSet) = this(context, attrs, 0)
@@ -46,8 +46,8 @@ class CallingHeader(val context: Context, val attrs: AttributeSet, val defStyleA
   lazy val closeButton = findById[GlyphButton](R.id.calling_header_close)
 
   Signal(controller.showVideoView, controller.isCallEstablished, controller.cameraFailed, controller.videoSendState).map {
-    case (true, true, false, VideoSendState.SEND) => true
-    case _                                        => false
+    case (true, true, false, VideoState.Started) => true
+    case _                                       => false
   }.onUi { visible =>
     verbose(s"video view visible: $visible")
     roundedLayout.setVisible(visible)

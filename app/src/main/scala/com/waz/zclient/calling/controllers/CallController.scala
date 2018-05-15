@@ -21,10 +21,10 @@ import android.media.AudioManager
 import android.os.{PowerManager, Vibrator}
 import com.waz.ZLog.ImplicitTag._
 import com.waz.ZLog._
-import com.waz.api.{Verification, VideoSendState}
+import com.waz.api.Verification
 import com.waz.avs.{VideoPreview, VideoRenderer}
 import com.waz.model.{AssetId, UserData, UserId}
-import com.waz.service.call.Avs.VideoReceiveState
+import com.waz.service.call.Avs.VideoState
 import com.waz.service.call.CallInfo
 import com.waz.service.call.CallInfo.CallState.{SelfJoining, _}
 import com.waz.service.{AccountsService, GlobalModule, NetworkModeService, ZMessaging}
@@ -89,9 +89,9 @@ class CallController(implicit inj: Injector, cxt: WireContext, eventContext: Eve
   val isCallIncoming    = callStateOpt.map(_.contains(OtherCalling))
 
   val isMuted           = currentCall.map(_.muted)
-  val startedAsVideo    = currentCall.map(_.isVideoCall)
+  val startedAsVideo    = currentCall.map(_.startedAsVideoCall)
   val isVideoCall       = currentCall.map { c =>
-    c.videoSendState != VideoSendState.DONT_SEND || c.videoReceiveState.exists { case (_, st) => st != VideoReceiveState.Stopped }
+    c.videoSendState != VideoState.Stopped || c.videoReceiveState.exists { case (_, st) => st != VideoState.Stopped }
   }
 
   val videoSendState    = currentCall.map(_.videoSendState)
@@ -106,7 +106,7 @@ class CallController(implicit inj: Injector, cxt: WireContext, eventContext: Eve
   def participantInfos(take: Option[Int] = None) =
     for {
       ids         <- take.fold(participantIds)(t => participantIds.map(_.take(t)))
-      videoStates <- Signal.const(Map.empty[UserId, VideoReceiveState]) //TODO use actual video receive states
+      videoStates <- Signal.const(Map.empty[UserId, VideoState]) //TODO use actual video receive states
       users       <- Signal.sequence(ids.map(UserSignal(_)):_*)
       teamId      <- callingZms.map(_.teamId)
     } yield
@@ -117,7 +117,7 @@ class CallController(implicit inj: Injector, cxt: WireContext, eventContext: Eve
           u.displayName,
           u.isGuest(teamId),
           u.isVerified,
-          videoStates.get(u.id).contains(VideoReceiveState.Started))
+          videoStates.get(u.id).contains(VideoState.Started))
       }
 
   val flowManager = callingZms.map(_.flowmanager)
@@ -186,7 +186,7 @@ class CallController(implicit inj: Injector, cxt: WireContext, eventContext: Eve
       st  <- videoSendState.head
       cId <- callConvId.head
       cs  <- callingService.head
-    } yield cs.setVideoSendActive(cId, if(st == VideoSendState.SEND) false else true)
+    } yield cs.setVideoSendState(cId, st)
   }
 
   private var _wasUiActiveOnCallStart = false
@@ -355,7 +355,7 @@ class CallController(implicit inj: Injector, cxt: WireContext, eventContext: Eve
 
   val stateMessageText = Signal(callState, cameraFailed, videoReceiveState, conversationName).map { vs =>
     verbose(s"$vs")
-    import VideoReceiveState._
+    import VideoState._
     vs match {
       case (SelfCalling,   true, _,             _)             => Option(cxt.getString(R.string.calling__self_preview_unavailable_long))
       case (SelfJoining,   _,    _,             _)             => Option(cxt.getString(R.string.ongoing__connecting))

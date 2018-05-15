@@ -23,7 +23,7 @@ import android.view.LayoutInflater
 import android.widget.GridLayout
 import com.waz.ZLog.ImplicitTag.implicitLogTag
 import com.waz.ZLog._
-import com.waz.api.VideoSendState
+import com.waz.service.call.Avs.VideoState
 import com.waz.utils.events.{EventStream, Signal}
 import com.waz.utils.returning
 import com.waz.zclient.calling.controllers.CallController
@@ -41,7 +41,7 @@ class ControlsView(val context: Context, val attrs: AttributeSet, val defStyleAt
 
   val onButtonClick = EventStream[Unit]
 
-  private val isVideoBeingSent = controller.videoSendState.map(_ != VideoSendState.DONT_SEND)
+  private val isVideoBeingSent = controller.videoSendState.map(_ != VideoState.Stopped)
 
   private val incomingNotEstablished = Signal(controller.isCallIncoming, controller.isCallEstablished).map {
     case (in, est) =>
