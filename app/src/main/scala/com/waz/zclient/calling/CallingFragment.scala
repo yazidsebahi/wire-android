@@ -19,9 +19,9 @@ package com.waz.zclient.calling
 
 import android.content.Context
 import android.os.Bundle
-import android.support.v7.widget.CardView
+import android.support.v7.widget.{CardView, GridLayout}
 import android.view.{LayoutInflater, View, ViewGroup}
-import android.widget.{FrameLayout, GridLayout}
+import android.widget.FrameLayout
 import com.waz.ZLog.ImplicitTag._
 import com.waz.ZLog._
 import com.waz.api.VideoSendState
