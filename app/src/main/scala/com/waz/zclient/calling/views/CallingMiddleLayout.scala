@@ -58,7 +58,7 @@ class CallingMiddleLayout(val context: Context, val attrs: AttributeSet, val def
     case (SelfJoining, Some(SelfCalling))  => SelfCalling
   }
 
-  Signal(callState,  controller.showVideoView, controller.isGroupCall).map {
+  Signal(callState, controller.showVideoView, controller.isGroupCall).map {
     case (_, false, false)           => CallDisplay.Chathead
     case (OtherCalling, false, true) => CallDisplay.Chathead
     case (SelfConnected, _, true)    => CallDisplay.Participants

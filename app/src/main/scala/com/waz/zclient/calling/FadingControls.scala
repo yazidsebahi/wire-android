@@ -22,16 +22,16 @@ import com.waz.ZLog.ImplicitTag.implicitLogTag
 import com.waz.ZLog.verbose
 import com.waz.threading.{CancellableFuture, Threading}
 import com.waz.utils.returning
+import com.waz.zclient.FragmentHelper
 import com.waz.zclient.utils.ViewUtils
-import com.waz.zclient.{FragmentHelper, ViewHolder}
 
 trait FadingControls extends FragmentHelper {
   private var inOrFadingIn = false
   private var tapFuture = Option.empty[CancellableFuture[Unit]]
 
-  private var controls = Seq[ViewHolder[_ <: View]]()
+  private var controls = Seq[View]()
 
-  def setFadingControls(controls: ViewHolder[_ <: View]*): Unit = {
+  def setFadingControls(controls: View*): Unit = {
     this.controls = controls
   }
 
@@ -61,13 +61,13 @@ trait FadingControls extends FragmentHelper {
 
   private def fadeIn(): Unit = {
     verbose(s"fadeIn")
-    controls.foreach(_.foreach(ViewUtils.fadeInView))
+    controls.foreach(ViewUtils.fadeInView)
     inOrFadingIn = true
   }
 
   private def fadeOut(): Unit = {
     verbose(s"fadeOut")
-    controls.foreach(_.foreach(ViewUtils.fadeOutView))
+    controls.foreach(ViewUtils.fadeOutView)
     inOrFadingIn = false
   }
 }

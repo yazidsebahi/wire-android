@@ -54,16 +54,8 @@ class ControlsFragment extends FadingControls {
     controller.degradationConfirmationText.onUi { text => vh.foreach(_.setText(text))}
   }
 
-  private lazy val overlayView = returning(view[View](R.id.video_background_overlay)) { vh =>
-    controller.showVideoView.onUi { visible =>
-      verbose(s"overlay visible: $visible")
-      vh.foreach(_.setVisible(visible))
-    }
-  }
-
-  private lazy val callingHeader = view[CallingHeader](R.id.calling_header)
-  private lazy val callingMiddle = view[CallingMiddleLayout](R.id.calling_middle)
-
+  private lazy val callingHeader   = view[CallingHeader](R.id.calling_header)
+  private lazy val callingMiddle   = view[CallingMiddleLayout](R.id.calling_middle)
   private lazy val callingControls = view[ControlsView](R.id.controls_grid)
 
   private lazy val messageView = returning(view[TextView](R.id.video_warning_message)) { vh =>
@@ -82,8 +74,6 @@ class ControlsFragment extends FadingControls {
     }
   }
 
-  private var hasFullScreenBeenSet = false //need to make sure we don't set the FullScreen preview on call tear down! never gets set back to false
-
   override def onCreateView(inflater: LayoutInflater, viewGroup: ViewGroup, savedInstanceState: Bundle): View =
     inflater.inflate(R.layout.fragment_calling_controls, viewGroup, false)
 
@@ -92,7 +82,6 @@ class ControlsFragment extends FadingControls {
 
     getActivity.getWindow.setBackgroundDrawableResource(R.color.calling_background)
 
-    overlayView
     degradedWarningTextView
     degradedConfirmationTextView
     callingHeader
@@ -100,7 +89,13 @@ class ControlsFragment extends FadingControls {
     callingControls
     messageView
 
-    setFadingControls(overlayView, callingHeader, callingMiddle, callingControls)
+    setFadingControls(
+      callingHeader.get.nameView,
+      callingHeader.get.subtitleView,
+      callingHeader.get.bitRateModeView,
+      callingMiddle.get,
+      callingControls.get
+    )
 
     controller.isCallActive.onUi {
       case false =>
@@ -119,9 +114,13 @@ class ControlsFragment extends FadingControls {
 
     v.onClick(if (controller.showVideoView.currentValue.getOrElse(false)) toggleControlVisibility())
 
+    callingHeader.foreach(_.closeButton.onClick {
+      verbose("close click")
+    })
   }
 
   private var subs = Set[Subscription]()
+
 
   override def onStart(): Unit = {
     super.onStart()
@@ -141,6 +140,17 @@ class ControlsFragment extends FadingControls {
         .addToBackStack(CallParticipantsFragment.Tag)
         .commit
     })
+  }
+
+  override def onResume() = {
+    super.onResume()
+    controller.callControlsVisible ! true
+  }
+
+
+  override def onPause() = {
+    controller.callControlsVisible ! false
+    super.onPause()
   }
 
   override def onStop(): Unit = {

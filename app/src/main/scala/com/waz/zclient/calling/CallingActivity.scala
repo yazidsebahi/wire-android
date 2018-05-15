@@ -29,6 +29,8 @@ import com.waz.zclient.utils.DeprecationUtils
 
 class CallingActivity extends BaseActivity {
 
+  lazy val controller = inject[CallController]
+
   override def onCreate(savedInstanceState: Bundle): Unit = {
     super.onCreate(savedInstanceState)
     verbose("Creating CallingActivity")
@@ -38,18 +40,6 @@ class CallingActivity extends BaseActivity {
       .beginTransaction()
       .replace(R.id.calling_layout, CallingFragment(), CallingFragment.Tag)
       .commit
-  }
-
-
-  override def onStart() = {
-    super.onStart()
-    controller.callScreenShown ! true
-  }
-
-
-  override def onStop() = {
-    controller.callScreenShown ! false
-    super.onStop()
   }
 
   override def onAttachedToWindow(): Unit = {

@@ -55,7 +55,7 @@ class CallController(implicit inj: Injector, cxt: WireContext, eventContext: Eve
   //The zms of the account that's currently active (if any)
   val activeZmsOpt = inject[Signal[Option[ZMessaging]]]
 
-  val callScreenShown = Signal(false)
+  val callControlsVisible = Signal(false)
   //the zms of the account that currently has an active call (if any)
   val callingZmsOpt =
     for {
@@ -163,8 +163,6 @@ class CallController(implicit inj: Injector, cxt: WireContext, eventContext: Eve
     case _ => Signal.const[Option[UserData]](None) //Need a none signal to help with further signals
   }
 
-  val onShowAllClick = EventStream[Unit]()
-
   def leaveCall(): Unit = {
     verbose(s"leaveCall")
     for {
@@ -216,10 +214,11 @@ class CallController(implicit inj: Injector, cxt: WireContext, eventContext: Eve
     screenManager.releaseWakeLock()
   }(EventContext.Global)
 
+
   (for {
     v  <- isVideoCall
     st <- callStateOpt
-    callingShown <- callScreenShown
+    callingShown <- callControlsVisible
   } yield (v, callingShown, st)) {
     case (true, _, _)                       => screenManager.setStayAwake()
     case (false, true, Some(OtherCalling))  => screenManager.setStayAwake()

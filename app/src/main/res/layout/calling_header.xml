@@ -22,23 +22,35 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="@dimen/calling__self_video_preview__dimension"
     android:layout_marginLeft="@dimen/wire__padding__regular"
     android:layout_marginRight="@dimen/wire__padding__regular"
     android:orientation="horizontal"
     android:layout_gravity="center"
     >
 
-    <com.waz.zclient.ui.text.TypefaceTextView
-        android:id="@+id/calling_header_icon"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
+    <FrameLayout
+        android:layout_width="@dimen/calling__self_video_preview__dimension"
+        android:layout_height="match_parent">
 
-        />
+        <com.waz.zclient.common.views.GlyphButton
+            android:id="@+id/calling_header_close"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|start"
+            android:text="@string/glyph__linedown"
+            android:textSize="@dimen/wire__icon_button__text_size_half"
+            android:background="@null"
+            style="?conversationToolbar"
+            />
+
+    </FrameLayout>
 
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:layout_gravity="top|center"
         android:orientation="vertical">
         <com.waz.zclient.ui.text.TypefaceTextView
             android:id="@+id/ttv__calling__header__name"
@@ -77,12 +89,17 @@
             />
     </LinearLayout>
 
+    <FrameLayout
+        android:layout_width="@dimen/calling__self_video_preview__dimension"
+        android:layout_height="match_parent">
 
     <com.waz.zclient.ui.calling.RoundedLayout
         android:id="@+id/rounded_layout"
-        android:layout_width="@dimen/calling__self_video_preview__dimension"
-        android:layout_height="@dimen/calling__self_video_preview__dimension"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
         android:background="@color/graphite"
         android:visibility="gone"
         />
+    </FrameLayout>
 </LinearLayout>

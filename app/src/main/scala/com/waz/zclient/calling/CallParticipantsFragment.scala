@@ -46,7 +46,7 @@ class CallParticipantsFragment extends FadingControls {
     toolbar
     participantsView
 
-    setFadingControls(toolbar, participantsView)
+    setFadingControls(toolbar.get, participantsView.get)
 
     subs += controller.showVideoView.onUi {
       case true  => extendControlsDisplay()
