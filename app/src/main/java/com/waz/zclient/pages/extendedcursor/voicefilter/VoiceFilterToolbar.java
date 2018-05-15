@@ -111,6 +111,10 @@ public class VoiceFilterToolbar extends ViewAnimator implements
         }
     }
 
+    public void setAccentColor(int accentColor) {
+
+    }
+
     public void reset() {
         recordButton.setSelected(false);
         recordButton.setText(R.string.glyph__record_alt);

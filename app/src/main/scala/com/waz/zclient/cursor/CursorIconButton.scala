@@ -98,11 +98,11 @@ class CursorIconButton(context: Context, attrs: AttributeSet, defStyleAttr: Int)
 
   setOnLongClickListener(new View.OnLongClickListener() {
     override def onLongClick(view: View): Boolean = {
-      menuItem.currentValue.flatten.foreach {
-        case CursorMenuItem.AudioMessage =>
+      menuItem.foreach {
+        case Some(CursorMenuItem.AudioMessage) =>
           // compatibility with old cursor handling
           controller.cursorCallback.foreach(_.onCursorButtonLongPressed(com.waz.zclient.ui.cursor.CursorMenuItem.AUDIO_MESSAGE))
-        case item if item != CursorMenuItem.Dummy && item != CursorMenuItem.Send =>
+        case Some(item) if item != CursorMenuItem.Dummy && item != CursorMenuItem.Send =>
           performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
           controller.onShowTooltip ! (item, view)
         case _ => // ignore
@@ -114,8 +114,8 @@ class CursorIconButton(context: Context, attrs: AttributeSet, defStyleAttr: Int)
   // for compatibility with old cursor
   setOnTouchListener(new View.OnTouchListener() {
     override def onTouch(view: View, motionEvent: MotionEvent): Boolean = {
-      menuItem.currentValue.flatten.foreach {
-        case CursorMenuItem.AudioMessage =>
+      menuItem.foreach {
+        case Some(CursorMenuItem.AudioMessage) =>
           controller.cursorCallback.foreach { callback =>
             callback.onMotionEventFromCursorButton(com.waz.zclient.ui.cursor.CursorMenuItem.AUDIO_MESSAGE, motionEvent)
           }

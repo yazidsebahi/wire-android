@@ -100,6 +100,7 @@ public class VoiceFilterLayout extends FrameLayout implements VoiceFilterControl
 
     public void setAccentColor(int accentColor) {
         voiceFilterContent.setAccentColor(accentColor);
+        voiceFilterToolbar.setAccentColor(accentColor);
     }
 
     public void setCallback(Callback callback) {
