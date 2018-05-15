@@ -171,37 +171,7 @@ class ControlsFragment extends FadingControls {
 
 object ControlsFragment {
   val VideoViewTag = "VIDEO_VIEW_TAG"
-  val TapDelay = FiniteDuration(3000, TimeUnit.MILLISECONDS)
   val Tag = classOf[ControlsFragment].getName
 
   def newInstance: Fragment = new ControlsFragment
-
-  /**
-    * Ensures there's only ever one video TextureView in a layout, and that it's always at the bottom. Both this layout
-    * and the RoundedLayout for the small self-preview extend FrameLayout, so hopefully enforcing FrameLayout here
-    * should break early if anything changes.
-    */
-  def addVideoViewToLayout(layout: FrameLayout, videoView: View) = {
-    removeVideoViewFromParent(videoView) //in case the videoView belongs to another parent
-    removeVideoViewFromLayoutByTag(layout) //in case the layout has another videoView
-
-    videoView.setTag(ControlsFragment.VideoViewTag)
-    layout.addView(videoView, 0, new LayoutParams(WRAP_CONTENT, WRAP_CONTENT, Gravity.CENTER))
-  }
-
-  /**
-    * Needed to remove a TextureView from its parent in case we try and set it as a child of a different layout
-    * (the self-preview TextureView moves from fullscreen to the small layout when call is answered)
-    */
-  private def removeVideoViewFromParent(videoView: View): Unit =
-    Option(videoView.getParent.asInstanceOf[ViewGroup]).foreach(_.removeView(videoView))
-
-  private def removeVideoViewFromLayoutByTag(layout: ViewGroup): Unit =
-    findVideoView(layout).foreach(layout.removeView)
-
-  private def findVideoView(layout: ViewGroup) =
-    for {
-      v <- Option(layout.getChildAt(0))
-      t <- Option(v.getTag) if t == ControlsFragment.VideoViewTag
-    } yield v
 }

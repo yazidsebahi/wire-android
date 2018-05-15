@@ -24,6 +24,7 @@ import com.waz.threading.{CancellableFuture, Threading}
 import com.waz.utils.returning
 import com.waz.zclient.FragmentHelper
 import com.waz.zclient.utils.ViewUtils
+import scala.concurrent.duration._
 
 trait FadingControls extends FragmentHelper {
   private var inOrFadingIn = false
@@ -47,7 +48,7 @@ trait FadingControls extends FragmentHelper {
     verbose(s"extendControlsDisplay")
     tapFuture.foreach(_.cancel())
     tapFuture = Option(
-      returning(CancellableFuture.delay(ControlsFragment.TapDelay)) {
+      returning(CancellableFuture.delay(3.seconds)) {
         _.foreach { _ => fadeOut() }(Threading.Ui)
       }
     )
