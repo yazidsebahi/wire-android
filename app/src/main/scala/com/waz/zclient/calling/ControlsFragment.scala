@@ -17,16 +17,12 @@
  */
 package com.waz.zclient.calling
 
-import java.util.concurrent.TimeUnit
-
 import android.content.Context
 import android.os.Bundle
 import android.support.annotation.Nullable
 import android.support.v4.app.Fragment
-import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.view._
-import android.widget.FrameLayout.LayoutParams
-import android.widget.{FrameLayout, TextView}
+import android.widget.TextView
 import com.waz.ZLog.ImplicitTag.implicitLogTag
 import com.waz.ZLog.verbose
 import com.waz.utils.events.Subscription
@@ -35,8 +31,6 @@ import com.waz.zclient.R
 import com.waz.zclient.calling.controllers.CallController
 import com.waz.zclient.calling.views.{CallingHeader, CallingMiddleLayout, ControlsView}
 import com.waz.zclient.utils.RichView
-
-import scala.concurrent.duration.FiniteDuration
 
 class ControlsFragment extends FadingControls {
 
