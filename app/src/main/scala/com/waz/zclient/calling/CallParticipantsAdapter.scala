@@ -59,8 +59,6 @@ class CallParticipantsAdapter(context: Context,
     notifyDataSetChanged()
   }
 
-  private var itemsSub = Option.empty[Subscription]
-
   callController.participantInfos(maxRows.map(_ - 1)).onUi { v =>
     items = v
     notifyDataSetChanged()
@@ -86,7 +84,7 @@ class CallParticipantsAdapter(context: Context,
 
   override def getItemCount: Int = maxRows match {
     case Some(mr) if mr < numOfParticipants => items.size + 1
-    case _                                  => items.size
+    case _                                  => items.size + 1 //TODO set back to items.size
   }
 
   override def getItemId(position: Int): Long =

@@ -45,13 +45,13 @@ class ControlsFragment extends FadingControls {
   private lazy val controller = inject[CallController]
 
   private lazy val degradedWarningTextView = returning(view[TextView](R.id.degraded_warning)) { vh =>
-    controller.convDegraded.onUi { degraded => vh.foreach(_.setVisible(degraded))}
-    controller.degradationWarningText.onUi { text => vh.foreach(_.setText(text))}
+    controller.convDegraded.onUi(degraded => vh.foreach(_.setVisible(degraded)))
+    controller.degradationWarningText.onUi(text => vh.foreach(_.setText(text)))
   }
 
   private lazy val degradedConfirmationTextView = returning(view[TextView](R.id.degraded_confirmation)) { vh =>
-    controller.convDegraded.onUi { degraded => vh.foreach(_.setVisible(degraded))}
-    controller.degradationConfirmationText.onUi { text => vh.foreach(_.setText(text))}
+    controller.convDegraded.onUi(degraded => vh.foreach(_.setVisible(degraded)))
+    controller.degradationConfirmationText.onUi(text => vh.foreach(_.setText(text)))
   }
 
   private lazy val callingHeader   = view[CallingHeader](R.id.calling_header)

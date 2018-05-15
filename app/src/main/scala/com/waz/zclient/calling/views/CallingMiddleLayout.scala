@@ -19,35 +19,37 @@ package com.waz.zclient.calling.views
 
 import android.content.Context
 import android.util.AttributeSet
-import android.view.LayoutInflater
-import android.widget.LinearLayout
+import android.widget.FrameLayout
 import com.waz.service.call.CallInfo
 import com.waz.service.call.CallInfo.CallState.{OtherCalling, SelfCalling, SelfConnected, SelfJoining}
 import com.waz.utils.events.Signal
+import com.waz.utils.returning
 import com.waz.zclient.calling.controllers.CallController
 import com.waz.zclient.common.views.ChatheadView
 import com.waz.zclient.utils.ContextUtils.getDimenPx
 import com.waz.zclient.utils.RichView
 import com.waz.zclient.{R, ViewHelper}
 
-class CallingMiddleLayout(val context: Context, val attrs: AttributeSet, val defStyleAttr: Int) extends LinearLayout(context, attrs, defStyleAttr) with ViewHelper {
+class CallingMiddleLayout(val context: Context, val attrs: AttributeSet, val defStyleAttr: Int) extends FrameLayout(context, attrs, defStyleAttr) with ViewHelper {
   import CallingMiddleLayout.CallDisplay
 
   def this(context: Context, attrs: AttributeSet) = this(context, attrs, 0)
   def this(context: Context) =  this(context, null)
 
-  private lazy val chathead = findById[ChatheadView](R.id.call_chathead)
+  private lazy val chathead = returning(findById[ChatheadView](R.id.call_chathead)) { v =>
+    val m = getDimenPx(R.dimen.wire__margin_top__big)
+    v.setMargin(0, m, 0, m)
+  }
   private lazy val participants = findById[CallParticipantsView](R.id.call_participants)
 
   lazy val onShowAllClicked = participants.onShowAllClicked
 
   override def onMeasure(widthSpec: Int, heightSpec: Int): Unit = {
     super.onMeasure(widthSpec, heightSpec)
-
     participants.setMaxRows( this.getMeasuredHeight / getDimenPx(R.dimen.user_row_height) )
   }
 
-  LayoutInflater.from(context).inflate(R.layout.calling_middle_layout, this, true)
+  inflate(R.layout.calling_middle_layout, this)
 
   private val controller = inject[CallController]
 

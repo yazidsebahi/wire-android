@@ -19,7 +19,6 @@ package com.waz.zclient.calling.views
 
 import android.content.Context
 import android.util.AttributeSet
-import android.view.LayoutInflater
 import android.widget.{LinearLayout, TextView}
 import com.waz.service.call.Avs.VideoState
 import com.waz.utils.events.Signal
@@ -53,10 +52,9 @@ class CallingHeader(val context: Context, val attrs: AttributeSet, val defStyleA
     roundedLayout.setVisible(visible)
   }
 
-  LayoutInflater.from(context).inflate(R.layout.calling_header, this, true)
+  inflate(R.layout.calling_header, this)
 
   controller.subtitleText.onUi(subtitleView.setText)
-
   controller.conversationName.onUi(nameView.setText)
 
   controller.cbrEnabled.map {
