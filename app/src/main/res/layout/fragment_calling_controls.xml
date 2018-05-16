@@ -22,14 +22,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
+    android:background="@color/calling_video_overlay"
     android:layout_height="match_parent">
-
-    <View
-        android:id="@+id/video_background_overlay"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/calling_video_overlay"
-        />
 
     <com.waz.zclient.ui.text.TypefaceTextView
         android:id="@+id/video_warning_message"

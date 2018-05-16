@@ -17,7 +17,7 @@
  */
 package com.waz.zclient.calling
 
-import android.content.{Context, Intent}
+import android.content.Context
 import android.os.Bundle
 import android.support.annotation.Nullable
 import android.support.v4.app.Fragment
@@ -25,14 +25,18 @@ import android.view._
 import android.widget.TextView
 import com.waz.ZLog.ImplicitTag.implicitLogTag
 import com.waz.ZLog.verbose
-import com.waz.utils.events.Subscription
-import com.waz.utils.returning
-import com.waz.zclient.{MainActivity, R}
+import com.waz.service.ZMessaging.clock
+import com.waz.utils.events.{ClockSignal, Signal, Subscription}
+import com.waz.utils.{returning, _}
 import com.waz.zclient.calling.controllers.CallController
 import com.waz.zclient.calling.views.{CallingHeader, CallingMiddleLayout, ControlsView}
 import com.waz.zclient.utils.RichView
+import com.waz.zclient.{FragmentHelper, R}
+import org.threeten.bp.Instant
 
-class ControlsFragment extends FadingControls {
+import scala.concurrent.duration._
+
+class ControlsFragment extends FragmentHelper {
 
   implicit def ctx: Context = getActivity
 
@@ -51,6 +55,17 @@ class ControlsFragment extends FadingControls {
   private lazy val callingHeader   = view[CallingHeader](R.id.calling_header)
   private lazy val callingMiddle   = view[CallingMiddleLayout](R.id.calling_middle)
   private lazy val callingControls = view[ControlsView](R.id.controls_grid)
+  private var subs = Set[Subscription]()
+
+  private lazy val lastControlsClick = Signal[(Boolean, Instant)]() //true = show controls and set timer, false = hide controls
+
+  private lazy val controlsVisible =
+    (for {
+      true         <- controller.isVideoCall
+      Some(est)    <- controller.currentCall.map(_.estabTime)
+      (show, last) <- lastControlsClick.orElse(Signal.const((true, clock.instant())))
+      display <- if (show) ClockSignal(3.seconds).map(c => last.max(est).until(c).asScala <= 3.seconds) else Signal.const(false)
+    } yield display).orElse(Signal.const(true))
 
   private lazy val messageView = returning(view[TextView](R.id.video_warning_message)) { vh =>
     (for {
@@ -83,14 +98,6 @@ class ControlsFragment extends FadingControls {
     callingControls
     messageView
 
-    setFadingControls(
-      callingHeader.get.nameView,
-      callingHeader.get.subtitleView,
-      callingHeader.get.bitRateModeView,
-      callingMiddle.get,
-      callingControls.get
-    )
-
     controller.isCallActive.onUi {
       case false =>
         verbose("call no longer exists, finishing activity")
@@ -105,31 +112,37 @@ class ControlsFragment extends FadingControls {
       degraded <- controller.convDegraded
       video    <- controller.isVideoCall
     } yield degraded && video).onChanged.filter(_ == true).onUi(_ => getActivity.finish())
-
-    v.onClick(if (controller.showVideoView.currentValue.getOrElse(false)) toggleControlVisibility())
-
-    callingHeader.foreach(_.closeButton.onClick {
-      getContext.startActivity(new Intent(getContext, classOf[MainActivity]))
-    })
   }
-
-  private var subs = Set[Subscription]()
-
 
   override def onStart(): Unit = {
     super.onStart()
 
+    lastControlsClick ! (true, clock.instant()) //reset timer after coming back from participants
+
+    subs += controlsVisible.onUi {
+      case true  => getView.fadeIn()
+      case false => getView.fadeOut()
+    }
+
     callingControls.foreach(controls =>
-      subs += controls.onButtonClick.onUi(_ => if (controller.showVideoView.currentValue.getOrElse(false)) extendControlsDisplay())
+      subs += controls.onButtonClick.onUi { _ =>
+        verbose("button clicked")
+        lastControlsClick ! (true, clock.instant())
+      }
     )
+
+    //we need to listen to clicks on the outer layout, so that we can set this.getView to gone.
+    getView.getParent.asInstanceOf[View].onClick {
+      Option(getView).map(_.getVisibility != View.VISIBLE).foreach(lastControlsClick ! (_, clock.instant()))
+    }
 
     callingMiddle.foreach(vh => subs += vh.onShowAllClicked.onUi { _ =>
       getFragmentManager.beginTransaction
         .setCustomAnimations(
-          R.anim.fragment_animation_second_page_slide_in_from_right,
-          R.anim.fragment_animation_second_page_slide_out_to_left,
-          R.anim.fragment_animation_second_page_slide_in_from_left,
-          R.anim.fragment_animation_second_page_slide_out_to_right)
+          R.anim.fragment_animation_second_page_slide_in_from_right_no_alpha,
+          R.anim.fragment_animation_second_page_slide_out_to_left_no_alpha,
+          R.anim.fragment_animation_second_page_slide_in_from_left_no_alpha,
+          R.anim.fragment_animation_second_page_slide_out_to_right_no_alpha)
         .replace(R.id.controls_layout, CallParticipantsFragment(), CallParticipantsFragment.Tag)
         .addToBackStack(CallParticipantsFragment.Tag)
         .commit
@@ -148,6 +161,7 @@ class ControlsFragment extends FadingControls {
   }
 
   override def onStop(): Unit = {
+    getView.getParent.asInstanceOf[View].setOnClickListener(null)
     subs.foreach(_.destroy())
     subs = Set.empty
     super.onStop()
