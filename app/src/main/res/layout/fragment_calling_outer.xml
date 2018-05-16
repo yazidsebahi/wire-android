@@ -41,7 +41,8 @@
         android:layout_gravity="end|top"
         android:layout_marginTop="@dimen/wire__padding__regular"
         android:layout_marginEnd="@dimen/wire__padding__regular"
-        app:cardCornerRadius="@dimen/calling_preview_card_radius"/>
+        app:cardCornerRadius="@dimen/calling_preview_card_radius"
+        app:cardElevation="0dp"/>
 
     <FrameLayout
         android:id="@+id/controls_layout"

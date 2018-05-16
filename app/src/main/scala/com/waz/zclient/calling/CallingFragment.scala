@@ -198,6 +198,7 @@ class CallingFragment extends FragmentHelper {
           if (r.getParent == null)
             v.addView(r)
         }
+        //TODO: ask AVS why VideoRenderer stops playing video after resizing view
 /*
         val viewsToRemove = viewMap.filter {
           case (uid, selfView) if uid == selfId => !gridViews.contains(selfView)

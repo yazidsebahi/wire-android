@@ -17,7 +17,7 @@
  */
 package com.waz.zclient.calling
 
-import android.content.Context
+import android.content.{Context, Intent}
 import android.os.Bundle
 import android.support.annotation.Nullable
 import android.support.v4.app.Fragment
@@ -27,7 +27,7 @@ import com.waz.ZLog.ImplicitTag.implicitLogTag
 import com.waz.ZLog.verbose
 import com.waz.utils.events.Subscription
 import com.waz.utils.returning
-import com.waz.zclient.R
+import com.waz.zclient.{MainActivity, R}
 import com.waz.zclient.calling.controllers.CallController
 import com.waz.zclient.calling.views.{CallingHeader, CallingMiddleLayout, ControlsView}
 import com.waz.zclient.utils.RichView
@@ -110,7 +110,7 @@ class ControlsFragment extends FadingControls {
     v.onClick(if (controller.showVideoView.currentValue.getOrElse(false)) toggleControlVisibility())
 
     callingHeader.foreach(_.closeButton.onClick {
-      verbose("close click")
+      getContext.startActivity(new Intent(getContext, classOf[MainActivity]))
     })
   }
 
