@@ -24,18 +24,18 @@ import android.view.{LayoutInflater, View, ViewGroup}
 import android.widget.ImageView
 import com.waz.ZLog.ImplicitTag.implicitLogTag
 import com.waz.utils.events._
-import com.waz.zclient.{Injectable, Injector, R}
 import com.waz.zclient.ViewHelper.inflate
 import com.waz.zclient.calling.controllers.CallController
 import com.waz.zclient.calling.controllers.CallController.CallParticipantInfo
 import com.waz.zclient.common.controllers.ThemeController
 import com.waz.zclient.common.views.SingleUserRowView
 import com.waz.zclient.common.views.SingleUserRowView.Theme
-import com.waz.zclient.common.views.SingleUserRowView.Theme.{Dark, Light, TransparentDark, TransparentLight}
+import com.waz.zclient.common.views.SingleUserRowView.Theme.{Dark, Light, TransparentLight}
 import com.waz.zclient.paintcode.{ForwardNavigationIcon, GuestIconWithColor}
 import com.waz.zclient.ui.text.TypefaceTextView
 import com.waz.zclient.utils.ContextUtils.{getColor, getDrawable, getString, getStyledColor}
 import com.waz.zclient.utils.RichView
+import com.waz.zclient.{Injectable, Injector, R}
 
 class CallParticipantsAdapter(implicit context: Context, eventContext: EventContext, inj: Injector) extends RecyclerView.Adapter[ViewHolder] with Injectable {
 
