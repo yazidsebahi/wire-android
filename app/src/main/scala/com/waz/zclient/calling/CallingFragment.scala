@@ -214,7 +214,7 @@ class CallingFragment extends FragmentHelper {
   }
 
   override def onCreateView(inflater: LayoutInflater, container: ViewGroup, savedInstanceState: Bundle) =
-    inflater.inflate(R.layout.fragment_calling_outer, container, false)
+    inflater.inflate(R.layout.fragment_calling, container, false)
 
   override def onViewCreated(view: View, savedInstanceState: Bundle) = {
     super.onViewCreated(view, savedInstanceState)

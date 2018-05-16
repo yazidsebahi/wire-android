@@ -76,8 +76,6 @@ class ControlsFragment extends FadingControls {
   override def onViewCreated(v: View, @Nullable savedInstanceState: Bundle): Unit = {
     super.onViewCreated(v, savedInstanceState)
 
-    getActivity.getWindow.setBackgroundDrawableResource(R.color.calling_background)
-
     degradedWarningTextView
     degradedConfirmationTextView
     callingHeader

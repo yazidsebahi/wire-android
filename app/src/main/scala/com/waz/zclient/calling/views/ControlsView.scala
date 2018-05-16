@@ -19,7 +19,6 @@ package com.waz.zclient.calling.views
 
 import android.content.Context
 import android.util.AttributeSet
-import android.view.LayoutInflater
 import android.widget.GridLayout
 import com.waz.ZLog.ImplicitTag.implicitLogTag
 import com.waz.ZLog._
@@ -35,7 +34,9 @@ class ControlsView(val context: Context, val attrs: AttributeSet, val defStyleAt
   def this(context: Context, attrs: AttributeSet) = this(context, attrs, 0)
   def this(context: Context) = this(context, null)
 
-  LayoutInflater.from(context).inflate(R.layout.calling__controls__grid, this, true)
+  inflate(R.layout.calling__controls__grid, this)
+  setColumnCount(3)
+  setRowCount(2)
 
   private lazy val controller = inject[CallController]
 

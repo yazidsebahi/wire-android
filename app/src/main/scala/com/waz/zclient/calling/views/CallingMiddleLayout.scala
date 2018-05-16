@@ -23,7 +23,6 @@ import android.widget.FrameLayout
 import com.waz.service.call.CallInfo
 import com.waz.service.call.CallInfo.CallState.{OtherCalling, SelfCalling, SelfConnected, SelfJoining}
 import com.waz.utils.events.Signal
-import com.waz.utils.returning
 import com.waz.zclient.calling.controllers.CallController
 import com.waz.zclient.common.views.ChatheadView
 import com.waz.zclient.utils.ContextUtils.getDimenPx
@@ -36,10 +35,11 @@ class CallingMiddleLayout(val context: Context, val attrs: AttributeSet, val def
   def this(context: Context, attrs: AttributeSet) = this(context, attrs, 0)
   def this(context: Context) =  this(context, null)
 
-  private lazy val chathead = returning(findById[ChatheadView](R.id.call_chathead)) { v =>
-    val m = getDimenPx(R.dimen.wire__margin_top__big)
-    v.setMargin(0, m, 0, m)
-  }
+  inflate(R.layout.calling_middle_layout, this)
+
+  private val controller = inject[CallController]
+
+  private lazy val chathead = findById[ChatheadView](R.id.call_chathead)
   private lazy val participants = findById[CallParticipantsView](R.id.call_participants)
 
   lazy val onShowAllClicked = participants.onShowAllClicked
@@ -48,10 +48,6 @@ class CallingMiddleLayout(val context: Context, val attrs: AttributeSet, val def
     super.onMeasure(widthSpec, heightSpec)
     participants.setMaxRows( this.getMeasuredHeight / getDimenPx(R.dimen.user_row_height) )
   }
-
-  inflate(R.layout.calling_middle_layout, this)
-
-  private val controller = inject[CallController]
 
   private val callState: Signal[CallInfo.CallState] = Signal(controller.callState, controller.prevCallStateOpt).collect {
     case (OtherCalling, _)                 => OtherCalling

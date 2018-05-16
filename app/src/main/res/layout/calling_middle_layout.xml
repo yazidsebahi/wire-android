@@ -26,9 +26,11 @@
 
     <com.waz.zclient.common.views.ChatheadView
         android:id="@+id/call_chathead"
-        android:layout_width="@dimen/calling__participants_max_diameter"
-        android:layout_height="@dimen/calling__participants_max_diameter"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:layout_gravity="center"
+        android:paddingTop="@dimen/wire__padding__12"
+        android:paddingBottom="@dimen/wire__padding__12"
         app:show_border="false"
         app:allow_icon="false"
         app:is_round="true"
@@ -37,8 +39,6 @@
         app:gray_on_unconnected="false"
         app:initials_font_size="@dimen/participant_initials_text_size"
         android:visibility="gone"
-        android:layout_marginTop="@dimen/wire__margin_top__big"
-        android:layout_marginBottom="@dimen/wire__margin_top__big"
         />
 
     <com.waz.zclient.calling.views.CallParticipantsView

@@ -91,6 +91,8 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_gravity="center"
+            android:layout_marginTop="@dimen/wire__padding__32"
+            android:layout_marginBottom="@dimen/wire__padding__32"
             android:layout_weight="1" />
 
         <com.waz.zclient.calling.views.ControlsView
@@ -98,7 +100,7 @@
             android:layout_width="@dimen/calling__controls__max_width"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|center"
-            android:layout_marginBottom="@dimen/wire__padding__huge" />
+            android:layout_marginBottom="@dimen/wire__padding__32" />
 
     </LinearLayout>
 
