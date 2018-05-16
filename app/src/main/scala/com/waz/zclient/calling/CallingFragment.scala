@@ -93,7 +93,7 @@ abstract class UserVideoView(context: Context, val userId: UserId) extends Frame
 
   addView(returning(videoView)(_.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))))
 
-  controller.allVideoReceiveState.map(_.get(userId)).collect {
+  controller.allVideoReceiveStates.map(_.get(userId)).collect {
     case Some(VideoState.Started) => true
     case Some(VideoState.Paused) => false
   }.onUi { hasVideo =>
@@ -131,7 +131,7 @@ class CallingFragment extends FragmentHelper {
   private var viewMap = Map[UserId, UserVideoView]()
 
   private lazy val videoGrid = returning(view[GridLayout](R.id.video_grid)) { vh =>
-    Signal(controller.allVideoReceiveState, controller.callingZms.map(_.selfUserId)).onUi { case (vrs, selfId) =>
+    Signal(controller.allVideoReceiveStates, controller.callingZms.map(_.selfUserId)).onUi { case (vrs, selfId) =>
 
       def createView(userId: UserId): UserVideoView = returning {
         if (controller.callingZms.currentValue.map(_.selfUserId).contains(userId))

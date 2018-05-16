@@ -95,8 +95,8 @@ class CallController(implicit inj: Injector, cxt: WireContext, eventContext: Eve
   }
 
   val videoSendState    = currentCall.map(_.videoSendState)
-  val videoReceiveState = currentCall.map(_.videoReceiveState)
-  val allVideoReceiveState = Signal(callingZms.map(_.selfUserId), videoReceiveState, videoSendState).map {
+  val videoReceiveStates = currentCall.map(_.videoReceiveState)
+  val allVideoReceiveStates = Signal(callingZms.map(_.selfUserId), videoReceiveStates, videoSendState).map {
     case (selfId, others, self) => others.updated(selfId, self)
   }
   val isGroupCall       = currentCall.map(_.isGroup)
@@ -364,13 +364,14 @@ class CallController(implicit inj: Injector, cxt: WireContext, eventContext: Eve
     }
   }
 
-  val stateMessageText = Signal(callState, cameraFailed, videoReceiveState, conversationName).map { vs =>
-    verbose(s"$vs")
+  def stateMessageText(userId: UserId) = Signal(callState, cameraFailed, allVideoReceiveStates.map(_.get(userId)), conversationName).map { vs =>
     import VideoState._
+    verbose(s"$vs")
     vs match {
       case (SelfCalling,   true, _,             _)             => Option(cxt.getString(R.string.calling__self_preview_unavailable_long))
       case (SelfJoining,   _,    _,             _)             => Option(cxt.getString(R.string.ongoing__connecting))
       case (SelfConnected, _,    BadConnection, _)             => Option(cxt.getString(R.string.ongoing__poor_connection_message))
+      case (SelfConnected, _,    Paused,        _)             => Option(cxt.getString(R.string.video_paused))
       case (SelfConnected, _,    Stopped,       otherUserName) => Option(cxt.getString(R.string.ongoing__other_turned_off_video, otherUserName))
       case (SelfConnected, _,    Unknown,       otherUserName) => Option(cxt.getString(R.string.ongoing__other_unable_to_send_video, otherUserName))
       case _ => None

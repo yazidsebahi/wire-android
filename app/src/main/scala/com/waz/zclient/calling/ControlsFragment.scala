@@ -55,7 +55,8 @@ class ControlsFragment extends FadingControls {
   private lazy val messageView = returning(view[TextView](R.id.video_warning_message)) { vh =>
     (for {
       startedAsVideo <- controller.startedAsVideo
-      msg            <- controller.stateMessageText
+      id             <- controller.selfUser.map(_.id)
+      msg            <- controller.stateMessageText(id)
     } yield (msg, startedAsVideo)).onUi {
       case (Some(message), true) =>
         vh.foreach { messageView =>
