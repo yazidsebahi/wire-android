@@ -29,13 +29,13 @@ import com.waz.ZLog._
 import com.waz.service.call.Avs.VideoState
 import com.waz.avs.{VideoPreview, VideoRenderer}
 import com.waz.model.{Dim2, UserId}
+import com.waz.threading.SerialDispatchQueue
 import com.waz.utils.events.Signal
 import com.waz.utils.returning
 import com.waz.zclient.calling.controllers.CallController
 import com.waz.zclient.common.views.BackgroundDrawable
 import com.waz.zclient.common.views.ImageController.{ImageSource, WireImage}
 import com.waz.zclient.ui.utils.ColorUtils
-import com.waz.zclient.utils.RichView
 import com.waz.zclient.{FragmentHelper, R, ViewHelper}
 
 class VideoPreview2(context: Context) extends VideoPreview(context) {
@@ -76,6 +76,8 @@ class VideoPreview2(context: Context) extends VideoPreview(context) {
 abstract class UserVideoView(context: Context, val userId: UserId) extends FrameLayout(context, null, 0) with ViewHelper {
   protected lazy val controller: CallController = inject[CallController]
 
+  private implicit val dispatcher = new SerialDispatchQueue(name = s"UserVideoView-$userId")
+
   private val blackLevel = 0.58f
 
   inflate(R.layout.video_call_paused_view)
@@ -93,14 +95,7 @@ abstract class UserVideoView(context: Context, val userId: UserId) extends Frame
 
   addView(returning(videoView)(_.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))))
 
-  controller.allVideoReceiveStates.map(_.get(userId)).collect {
-    case Some(VideoState.Started) => true
-    case Some(VideoState.Paused) => false
-  }.onUi { hasVideo =>
-    pausedText.setVisible(!hasVideo)
-    imageView.setVisible(!hasVideo)
-    videoView.setVisible(hasVideo)
-  }
+  controller.stateMessageText(userId).onUi(msg => pausedText.setText(msg.getOrElse("")))
 
   override def onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int): Unit = {
     super.onLayout(changed, left, top, right, bottom)

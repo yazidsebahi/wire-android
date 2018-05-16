@@ -42,6 +42,7 @@ import scala.concurrent.duration._
 
 class CallController(implicit inj: Injector, cxt: WireContext, eventContext: EventContext) extends Injectable {
 
+  import VideoState._
   import Threading.Implicits.Background
   private implicit val uiStorage: UiStorage = inject[UiStorage]
 
@@ -366,10 +367,9 @@ class CallController(implicit inj: Injector, cxt: WireContext, eventContext: Eve
     }
   }
 
-  def stateMessageText(userId: UserId) = Signal(callState, cameraFailed, allVideoReceiveStates.map(_.get(userId)), conversationName).map { vs =>
-    import VideoState._
-    verbose(s"$vs")
-    vs match {
+  def stateMessageText(userId: UserId): Signal[Option[String]] = Signal(callState, cameraFailed, allVideoReceiveStates.map(_.get(userId).getOrElse(Unknown)), conversationName).map { vs =>
+    verbose(s"Message Text: $vs")
+    val r = vs match {
       case (SelfCalling,   true, _,             _)             => Option(cxt.getString(R.string.calling__self_preview_unavailable_long))
       case (SelfJoining,   _,    _,             _)             => Option(cxt.getString(R.string.ongoing__connecting))
       case (SelfConnected, _,    BadConnection, _)             => Option(cxt.getString(R.string.ongoing__poor_connection_message))
@@ -378,6 +378,7 @@ class CallController(implicit inj: Injector, cxt: WireContext, eventContext: Eve
       case (SelfConnected, _,    Unknown,       otherUserName) => Option(cxt.getString(R.string.ongoing__other_unable_to_send_video, otherUserName))
       case _ => None
     }
+    r
   }
 
   val showOngoingControls = convDegraded.flatMap {

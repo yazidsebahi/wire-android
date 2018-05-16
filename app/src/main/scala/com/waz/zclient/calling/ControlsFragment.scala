@@ -67,24 +67,6 @@ class ControlsFragment extends FragmentHelper {
       display <- if (show) ClockSignal(3.seconds).map(c => last.max(est).until(c).asScala <= 3.seconds) else Signal.const(false)
     } yield display).orElse(Signal.const(true))
 
-  private lazy val messageView = returning(view[TextView](R.id.video_warning_message)) { vh =>
-    (for {
-      startedAsVideo <- controller.startedAsVideo
-      id             <- controller.selfUser.map(_.id)
-      msg            <- controller.stateMessageText(id)
-    } yield (msg, startedAsVideo)).onUi {
-      case (Some(message), true) =>
-        vh.foreach { messageView =>
-          messageView.setVisible(true)
-          messageView.setText(message)
-          verbose(s"messageView text: $message")
-        }
-      case _ =>
-        verbose("messageView gone")
-        vh.foreach(_.setVisible(false))
-    }
-  }
-
   override def onCreateView(inflater: LayoutInflater, viewGroup: ViewGroup, savedInstanceState: Bundle): View =
     inflater.inflate(R.layout.fragment_calling_controls, viewGroup, false)
 
@@ -96,7 +78,6 @@ class ControlsFragment extends FragmentHelper {
     callingHeader
     callingMiddle
     callingControls
-    messageView
 
     controller.isCallActive.onUi {
       case false =>

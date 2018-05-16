@@ -26,20 +26,6 @@
     android:layout_height="match_parent">
 
     <com.waz.zclient.ui.text.TypefaceTextView
-        android:id="@+id/video_warning_message"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/calling_background"
-        android:gravity="center"
-        android:textAlignment="center"
-        android:textAllCaps="true"
-        android:textColor="@color/text__primary_dark"
-        android:textSize="@dimen/wire__text_size__small"
-        android:visibility="gone"
-        app:w_font="@string/wire__typeface__light"
-        />
-
-    <com.waz.zclient.ui.text.TypefaceTextView
         android:id="@+id/degraded_warning"
         android:layout_gravity="center"
         android:layout_width="@dimen/calling__participants_max_diameter"
