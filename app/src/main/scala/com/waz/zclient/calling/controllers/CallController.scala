@@ -197,7 +197,10 @@ class CallController(implicit inj: Injector, cxt: WireContext, eventContext: Eve
       st  <- videoSendState.head
       cId <- callConvId.head
       cs  <- callingService.head
-    } yield cs.setVideoSendState(cId, st)
+    } yield {
+      import VideoState._
+      cs.setVideoSendState(cId, if (st != Started) Started else Stopped)
+    }
   }
 
   private var _wasUiActiveOnCallStart = false
