@@ -28,9 +28,7 @@ import com.waz.zclient.calling.controllers.CallController
 import com.waz.zclient.utils.DeprecationUtils
 
 class CallingActivity extends BaseActivity {
-
-  lazy val controller = inject[CallController]
-
+  
   override def onCreate(savedInstanceState: Bundle): Unit = {
     super.onCreate(savedInstanceState)
     verbose("Creating CallingActivity")

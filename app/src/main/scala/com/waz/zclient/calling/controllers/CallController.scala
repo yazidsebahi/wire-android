@@ -29,7 +29,6 @@ import com.waz.service.call.CallInfo
 import com.waz.service.call.CallInfo.CallState.{SelfJoining, _}
 import com.waz.service.{AccountsService, GlobalModule, NetworkModeService, ZMessaging}
 import com.waz.threading.{CancellableFuture, Threading}
-import com.waz.utils._
 import com.waz.utils.events._
 import com.waz.zclient.calling.CallingActivity
 import com.waz.zclient.calling.controllers.CallController.CallParticipantInfo
