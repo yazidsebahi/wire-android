@@ -78,11 +78,11 @@ class CallParticipantsAdapter(implicit context: Context, eventContext: EventCont
   }
 
   override def getItemViewType(position: Int): Int =
-    if (position == items.size) ShowAll
+    if (position == items.size || maxRows.contains(position)) ShowAll
     else UserRow
 
   override def getItemCount: Int = maxRows match {
-    case Some(mr) if mr < numOfParticipants => items.size + 1
+    case Some(mr) if mr < numOfParticipants => mr + 1
     case _                                  => items.size + 1 //TODO set back to items.size
   }
 

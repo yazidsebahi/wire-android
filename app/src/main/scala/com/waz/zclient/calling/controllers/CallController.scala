@@ -361,7 +361,7 @@ class CallController(implicit inj: Injector, cxt: WireContext, eventContext: Eve
       case (true,  OtherCalling, _)  => cxt.getString(R.string.calling__header__incoming_subtitle__video)
       case (false, OtherCalling, _)  => cxt.getString(R.string.calling__header__incoming_subtitle)
       case (_,     SelfJoining,  _)  => cxt.getString(R.string.calling__header__joining)
-      case (false, SelfConnected, d) => d
+      case (_,     SelfConnected, d) => d
       case _ => ""
     }
   }
