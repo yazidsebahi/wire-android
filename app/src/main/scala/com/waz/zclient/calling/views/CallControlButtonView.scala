@@ -22,10 +22,11 @@ import android.support.v4.content.ContextCompat
 import android.util.{AttributeSet, TypedValue}
 import android.view.Gravity
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
-import android.widget.LinearLayout
+import android.widget.{ImageView, LinearLayout}
 import com.waz.utils.returning
 import com.waz.zclient.calling.views.CallControlButtonView.ButtonColor
-import com.waz.zclient.ui.text.{GlyphTextView, TypefaceTextView}
+import com.waz.zclient.paintcode.WireDrawable
+import com.waz.zclient.ui.text.TypefaceTextView
 import com.waz.zclient.ui.theme.{OptionsDarkTheme, OptionsLightTheme}
 import com.waz.zclient.utils.ContextUtils._
 import com.waz.zclient.utils.RichView
@@ -58,11 +59,13 @@ class CallControlButtonView(val context: Context, val attrs: AttributeSet, val d
 
   private var pressed: Boolean = false
   private var active: Boolean = true
+  private var buttonDrawable = Option.empty[WireDrawable]
 
-  private val buttonView = returning(new GlyphTextView(getContext, null, defStyleAttr)) { b =>
+  private val buttonView = returning(new ImageView(getContext)) { b =>
     b.setLayoutParams(new LinearLayout.LayoutParams(circleIconDimension, circleIconDimension))
-    b.setTextSize(TypedValue.COMPLEX_UNIT_PX, getDimenPx(R.dimen.wire__icon_button__text_size))
-    b.setGravity(Gravity.CENTER)
+    b.setScaleType(ImageView.ScaleType.FIT_CENTER)
+    val p = getDimenPx(R.dimen.calling_button_icon_padding)
+    b.setPadding(p, p, p, p)
     addView(b)
   }
 
@@ -93,23 +96,26 @@ class CallControlButtonView(val context: Context, val attrs: AttributeSet, val d
 
   private def setButtonColors(): Unit = {
     if (!active) {
-      buttonView.setTextColor(getColorStateList(R.color.selector__icon_button__text_color__light))
-      buttonView.setBackground(ContextCompat.getDrawable(getContext, R.drawable.selector__icon_button__background__calling))
+      buttonDrawable.foreach(_.setColor(getColor(R.color.graphite_64)))
+      buttonView.setBackground(ContextCompat.getDrawable(getContext, R.drawable.selector__icon_button__background__calling_disabled))
     } else if (pressed) {
-      buttonView.setTextColor(new OptionsLightTheme(getContext).getTextColorPrimarySelector)
+      buttonDrawable.foreach(_.setColor(new OptionsLightTheme(getContext).getTextColorPrimarySelector.getDefaultColor))
       buttonView.setBackground(ContextCompat.getDrawable(getContext, R.drawable.selector__icon_button__background__calling_toggled))
     } else {
-      buttonView.setTextColor(new OptionsDarkTheme(getContext).getTextColorPrimarySelector)
+      buttonDrawable.foreach(_.setColor(new OptionsDarkTheme(getContext).getTextColorPrimarySelector.getDefaultColor))
       buttonView.setBackground(ContextCompat.getDrawable(getContext, R.drawable.selector__icon_button__background__calling))
     }
   }
 
-  def setGlyph(glyphId: Int): Unit = buttonView.setText(getResources.getText(glyphId))
+  def setButtonDrawable(drawable: WireDrawable): Unit = {
+    buttonView.setImageDrawable(drawable)
+    buttonDrawable = Some(drawable)
+  }
 
   def setText(stringId: Int): Unit = buttonLabelView.setText(getResources.getText(stringId))
 
-  def set(glyphId: Int, labelStringId: Int, onClick: () => Unit, color: ButtonColor = ButtonColor.Transparent): Unit = {
-    setGlyph(glyphId)
+  def set(drawable: WireDrawable, labelStringId: Int, onClick: () => Unit, color: ButtonColor = ButtonColor.Transparent): Unit = {
+    setButtonDrawable(drawable)
     setText(labelStringId)
     setColor(color)
     this.onClick { if (active) onClick() }
@@ -124,7 +130,7 @@ class CallControlButtonView(val context: Context, val attrs: AttributeSet, val d
       case Transparent => (R.drawable.selector__icon_button__background__calling, R.color.wire__text_color_primary_dark_selector)
     }
 
-    buttonView.setTextColor(getColorStateList(textColor))
+    buttonDrawable.foreach(_.setColor(getColorStateList(textColor).getDefaultColor))
     buttonView.setBackground(getDrawable(drawable))
   }
 

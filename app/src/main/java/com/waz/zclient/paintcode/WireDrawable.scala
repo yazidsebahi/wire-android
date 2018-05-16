@@ -35,7 +35,10 @@ trait WireDrawable extends Drawable {
 
   override def setAlpha(alpha: Int): Unit = paint.setAlpha(alpha)
 
-  def setColor(color: Int): Unit = paint.setColor(color)
+  def setColor(color: Int): Unit = {
+    paint.setColor(color)
+    invalidateSelf()
+  }
 
   protected def getDrawingRect = new RectF(getBounds.left + padding.left, getBounds.top + padding.top, getBounds.right - padding.right, getBounds.bottom - padding.bottom)
 
@@ -128,4 +131,29 @@ case class BackupRestoreIcon(color: Int)(implicit context: Context) extends Wire
 case class VideoIcon(colorRes: Int)(implicit context: Context) extends WireDrawable {
   setColor(getColor(colorRes))
   override def draw(canvas: Canvas) = drawCamera(canvas, getDrawingRect, ResizingBehavior.AspectFit, paint.getColor)
+}
+
+case class AcceptCallIcon()(implicit context: Context) extends WireDrawable {
+  setColor(Color.WHITE)
+  override def draw(canvas: Canvas) = drawAcceptCall(canvas, getDrawingRect, ResizingBehavior.AspectFit, paint.getColor)
+}
+
+case class HangUpCallIcon()(implicit context: Context) extends WireDrawable {
+  setColor(Color.WHITE)
+  override def draw(canvas: Canvas) = drawHangUpCall(canvas, getDrawingRect, ResizingBehavior.AspectFit, paint.getColor)
+}
+
+case class SpeakerIcon()(implicit context: Context) extends WireDrawable {
+  setColor(Color.WHITE)
+  override def draw(canvas: Canvas) = drawSpeaker(canvas, getDrawingRect, ResizingBehavior.AspectFit, paint.getColor)
+}
+
+case class MuteIcon()(implicit context: Context) extends WireDrawable {
+  setColor(Color.WHITE)
+  override def draw(canvas: Canvas) = drawMute(canvas, getDrawingRect, ResizingBehavior.AspectFit, paint.getColor)
+}
+
+case class FlipIcon()(implicit context: Context) extends WireDrawable {
+  setColor(Color.WHITE)
+  override def draw(canvas: Canvas) = drawFlip(canvas, getDrawingRect, ResizingBehavior.AspectFit, paint.getColor)
 }

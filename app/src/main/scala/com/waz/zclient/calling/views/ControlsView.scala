@@ -27,6 +27,7 @@ import com.waz.utils.events.{EventStream, Signal}
 import com.waz.utils.returning
 import com.waz.zclient.calling.controllers.CallController
 import com.waz.zclient.calling.views.CallControlButtonView.ButtonColor
+import com.waz.zclient.paintcode._
 import com.waz.zclient.utils.RichView
 import com.waz.zclient.{R, ViewHelper}
 
@@ -51,13 +52,13 @@ class ControlsView(val context: Context, val attrs: AttributeSet, val defStyleAt
   }
   // first row
   returning(findById[CallControlButtonView](R.id.mute_call)) { button =>
-    button.set(R.string.glyph__microphone_off, R.string.incoming__controls__ongoing__mute, mute)
+    button.set(MuteIcon(), R.string.incoming__controls__ongoing__mute, mute)
 
     controller.isMuted.onUi(button.setButtonPressed)
   }
 
   returning(findById[CallControlButtonView](R.id.video_call)) { button =>
-    button.set(R.string.glyph__video, R.string.incoming__controls__ongoing__video, video)
+    button.set(VideoIcon(R.color.white), R.string.incoming__controls__ongoing__video, video)
 
     isVideoBeingSent.onUi(button.setButtonPressed)
 
@@ -69,28 +70,27 @@ class ControlsView(val context: Context, val attrs: AttributeSet, val defStyleAt
   returning(findById[CallControlButtonView](R.id.speaker_flip_call)) { button =>
     isVideoBeingSent.onUi {
       case true =>
-        button.set(R.string.glyph__flip, R.string.incoming__controls__ongoing__flip, flip)
+        button.set(FlipIcon(), R.string.incoming__controls__ongoing__flip, flip)
       case false =>
-        button.set(R.string.glyph__speaker_loud, R.string.incoming__controls__ongoing__speaker, speaker)
+        button.set(SpeakerIcon(), R.string.incoming__controls__ongoing__speaker, speaker)
         controller.speakerButton.buttonState.onUi(button.setButtonPressed)
     }
   }
 
   // second row
   returning(findById[CallControlButtonView](R.id.reject_call)) { button =>
-    button.set(R.string.glyph__end_call, R.string.empty_string, leave, ButtonColor.Red)
-
+    button.set(HangUpCallIcon(), R.string.empty_string, leave, ButtonColor.Red)
     incomingNotEstablished.onUi(button.setVisible)
   }
 
   returning(findById[CallControlButtonView](R.id.end_call)) { button =>
-    button.set(R.string.glyph__end_call, R.string.empty_string, leave, ButtonColor.Red)
+    button.set(HangUpCallIcon(), R.string.empty_string, leave, ButtonColor.Red)
 
     incomingNotEstablished.map(!_).onUi(button.setVisible)
   }
 
   returning(findById[CallControlButtonView](R.id.accept_call)) { button =>
-    button.set(R.string.glyph__call, R.string.empty_string, accept, ButtonColor.Green)
+    button.set(AcceptCallIcon(), R.string.empty_string, accept, ButtonColor.Green)
 
     incomingNotEstablished.onUi(button.setVisible)
   }

@@ -954,6 +954,6 @@
     <dimen name="calling_preview_card_width">80dp</dimen>
     <dimen name="calling_preview_card_height">104dp</dimen>
     <dimen name="calling_preview_card_radius">8dp</dimen>
-
+    <dimen name="calling_button_icon_padding">22dp</dimen>
 
 </resources>

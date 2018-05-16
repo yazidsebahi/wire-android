@@ -19,22 +19,10 @@
 
 -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <item android:state_pressed="true">
-        <shape android:shape="oval">
-            <solid android:color="@color/white_48" />
-        </shape>
-    </item>
-
-    <item android:state_selected="true">
-        <shape android:shape="oval">
-            <solid android:color="@color/graphite" />
-        </shape>
-    </item>
     <item>
         <shape android:shape="oval">
-            <solid android:color="@color/white"/>
+            <solid android:color="@color/white" />
+            <stroke android:color="@color/white" />
         </shape>
     </item>
 </selector>
-

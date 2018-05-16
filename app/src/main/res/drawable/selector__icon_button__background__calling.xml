@@ -22,20 +22,18 @@
 
     <item android:state_pressed="true">
         <shape android:shape="oval">
-            <solid android:color="@color/white_48" />
-            <stroke android:color="@color/white_48" />
+            <solid android:color="@color/white_32" />
         </shape>
     </item>
 
     <item android:state_selected="true">
         <shape android:shape="oval">
             <solid android:color="@color/white" />
-            <stroke android:color="@color/white" />
         </shape>
     </item>
     <item>
         <shape android:shape="oval">
-            <stroke android:color="@color/white_48" android:width="@dimen/wire__stroke" />
+            <solid android:color="@color/white_16"/>
         </shape>
     </item>
 </selector>
