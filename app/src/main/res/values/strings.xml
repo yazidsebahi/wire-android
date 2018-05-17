@@ -135,11 +135,11 @@
     <string name="people_picker__search_people">PEOPLE</string>
     <string name="people_picker__search_services">SERVICES</string>
 
-    <string name="receive_news_and_offers_request_title">News and offers</string>
-    <string name="receive_news_and_offers_request_body">We would like to send you more information about our product. To do so, we may use external services like Salesforce and Marketo. You can unsubscribe at any time. We will not keep your data after that.</string>
+    <string name="receive_news_and_offers_request_title">Do you want to receive news and product updates from Wire via email?</string>
+    <string name="receive_news_and_offers_request_body">You can unsubscribe at any time.</string>
 
     <string name="crashes_and_analytics_request_title">Help us make Wire better</string>
-    <string name="crashes_and_analytics_request_body">Sending usage and crash reports helps us to improve our products and services. We do not use this information for anything else.</string>
+    <string name="crashes_and_analytics_request_body">Sending anonymous usage and crash reports helps us to improve our products and services. We do not use this information for anything else.</string>
 
     <!-- Bots / Integrations / Services -->
     <string name="integrations_picker__section_title">Services</string>
@@ -504,9 +504,9 @@
     <!-- Data Usage Permissions -->
 
     <string name="pref_advanced_send_anonymous_data_title">Send Anonymous Data</string>
-    <string name="pref_advanced_send_anonymous_data_summary">Help make Wire better by sending usage and crash reports.</string>
-    <string name="pref_advanced_receive_news_and_offers_title">Receive News and Offers</string>
-    <string name="pref_advanced_receive_news_and_offers_summary">We may use external services like Salesforce and Marketo to process your data. You may still receive other messages from us.</string>
+    <string name="pref_advanced_send_anonymous_data_summary">Help make Wire better by sending anonymous usage and crash reports.</string>
+    <string name="pref_advanced_receive_news_and_offers_title">Receive Newsletter</string>
+    <string name="pref_advanced_receive_news_and_offers_summary">Receive news and product update from Wire via email.</string>
 
     <!-- Options -->
     <string name="pref_options_dark_theme_title">Dark theme</string>
