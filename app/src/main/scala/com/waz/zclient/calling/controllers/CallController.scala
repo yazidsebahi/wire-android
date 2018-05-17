@@ -203,7 +203,7 @@ class CallController(implicit inj: Injector, cxt: WireContext, eventContext: Eve
     }
   }
 
-  def setVideoPaause(pause: Boolean): Unit = {
+  def setVideoPause(pause: Boolean): Unit = {
     verbose(s"setVideoPause: $pause")
     for {
       st  <- videoSendState.head
