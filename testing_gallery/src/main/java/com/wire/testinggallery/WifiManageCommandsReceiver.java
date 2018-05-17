@@ -81,7 +81,7 @@ public class WifiManageCommandsReceiver extends BroadcastReceiver {
             return;
         }
         Optional<String> password = Optional.fromNullable(intent.getStringExtra(EXTRA_PASSWORD));
-        if (password.isPresent()) {
+        if (password.isPresent() && !isSSIDKnown(context, ssid.get())) {
             addSsid(context, ssid.get(), password.get());
         }
         connectToSsid(context, ssid.get());
@@ -103,6 +103,19 @@ public class WifiManageCommandsReceiver extends BroadcastReceiver {
         if (wifiManager != null) {
             wifiManager.setWifiEnabled(status);
         }
+    }
+
+    private boolean isSSIDKnown(Context context, String ssid) {
+        WifiManager wifiManager = (WifiManager) context.getApplicationContext().getSystemService(WIFI_SERVICE);
+        if (wifiManager != null) {
+            List<WifiConfiguration> list = wifiManager.getConfiguredNetworks();
+            for (WifiConfiguration i : list) {
+                if (i.SSID.equals(ssid)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private void addSsid(Context context, String SSID, String password) {
