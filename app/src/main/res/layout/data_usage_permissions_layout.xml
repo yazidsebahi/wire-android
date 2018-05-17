@@ -38,7 +38,7 @@
             <com.waz.zclient.preferences.views.SwitchPreference
                 android:id="@+id/preferences_send_anonymous_data"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/preference_button_height"
+                android:layout_height="wrap_content"
                 app:title="@string/pref_advanced_send_anonymous_data_title"
                 app:subtitle="@string/pref_advanced_send_anonymous_data_summary"
             />
@@ -46,7 +46,7 @@
             <com.waz.zclient.preferences.views.SwitchPreference
                 android:id="@+id/preferences_receive_news_and_offers"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/preference_button_height"
+                android:layout_height="wrap_content"
                 app:title="@string/pref_advanced_receive_news_and_offers_title"
                 app:subtitle="@string/pref_advanced_receive_news_and_offers_summary"
             />

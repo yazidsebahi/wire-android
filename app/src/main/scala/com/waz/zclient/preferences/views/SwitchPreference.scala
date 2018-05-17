@@ -27,6 +27,7 @@ import com.waz.service.ZMessaging
 import com.waz.threading.Threading
 import com.waz.utils.events.{EventStream, Signal}
 import com.waz.zclient.{R, ViewHelper}
+import com.waz.zclient.utils.RichView
 import com.waz.ZLog.ImplicitTag._
 
 trait Switchable {
@@ -43,12 +44,15 @@ class SwitchPreference(context: Context, attrs: AttributeSet, style: Int) extend
   private val attributesArray: TypedArray =
     context.getTheme.obtainStyledAttributes(attrs, R.styleable.SwitchPreference, 0, 0)
 
-  val keyAttr = Option(attributesArray.getString(R.styleable.SwitchPreference_key))
-  val switch = findById[Switch](R.id.preference_switch)
-  val prefInfo = Signal[PrefInfo]()
   lazy val zms = inject[Signal[ZMessaging]]
+
+  val prefInfo = Signal[PrefInfo]()
+  override val onCheckedChange = EventStream[Boolean]()
+
+  val switch = findById[Switch](R.id.preference_switch)
+
   lazy val pref = for {
-    z <- zms
+    z        <- zms
     prefInfo <- prefInfo
   } yield {
     if (prefInfo.global)
@@ -57,16 +61,14 @@ class SwitchPreference(context: Context, attrs: AttributeSet, style: Int) extend
       z.userPrefs.preference(prefInfo.key)
   }
 
-  override val onCheckedChange = EventStream[Boolean]()
+  Option(attributesArray.getString(R.styleable.SwitchPreference_key)).foreach { key =>
+    prefInfo ! PrefInfo(PrefKey[Boolean](key, customDefault = false), global = false)
+  }
 
   pref.flatMap(_.signal).onUi(setChecked(_))
 
   onCheckedChange.onUi { value =>
     pref.head.map(_.update(value))(Threading.Ui)
-  }
-
-  keyAttr.foreach{ key =>
-    prefInfo ! PrefInfo(PrefKey[Boolean](key, customDefault = false), global = false)
   }
 
   val checkChangeListener = new OnCheckedChangeListener {
@@ -77,6 +79,9 @@ class SwitchPreference(context: Context, attrs: AttributeSet, style: Int) extend
   }
 
   switch.setOnCheckedChangeListener(checkChangeListener)
+  this.onClick {
+    setChecked(!switch.isChecked)
+  }
 
   def setDisabled(disabled: Boolean) = {
     setEnabled(!disabled)
