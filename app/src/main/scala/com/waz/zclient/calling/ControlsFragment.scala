@@ -17,17 +17,17 @@
  */
 package com.waz.zclient.calling
 
-import android.content.Context
+import android.app.AlertDialog
+import android.content.{Context, DialogInterface}
 import android.os.Bundle
 import android.support.annotation.Nullable
 import android.support.v4.app.Fragment
 import android.view._
-import android.widget.TextView
 import com.waz.ZLog.ImplicitTag.implicitLogTag
 import com.waz.ZLog.verbose
 import com.waz.service.ZMessaging.clock
+import com.waz.utils._
 import com.waz.utils.events.{ClockSignal, Signal, Subscription}
-import com.waz.utils.{returning, _}
 import com.waz.zclient.calling.controllers.CallController
 import com.waz.zclient.calling.views.{CallingHeader, CallingMiddleLayout, ControlsView}
 import com.waz.zclient.utils.RichView
@@ -41,16 +41,6 @@ class ControlsFragment extends FragmentHelper {
   implicit def ctx: Context = getActivity
 
   private lazy val controller = inject[CallController]
-
-  private lazy val degradedWarningTextView = returning(view[TextView](R.id.degraded_warning)) { vh =>
-    controller.convDegraded.onUi(degraded => vh.foreach(_.setVisible(degraded)))
-    controller.degradationWarningText.onUi(text => vh.foreach(_.setText(text)))
-  }
-
-  private lazy val degradedConfirmationTextView = returning(view[TextView](R.id.degraded_confirmation)) { vh =>
-    controller.convDegraded.onUi(degraded => vh.foreach(_.setVisible(degraded)))
-    controller.degradationConfirmationText.onUi(text => vh.foreach(_.setText(text)))
-  }
 
   private lazy val callingHeader   = view[CallingHeader](R.id.calling_header)
   private lazy val callingMiddle   = view[CallingMiddleLayout](R.id.calling_middle)
@@ -73,8 +63,6 @@ class ControlsFragment extends FragmentHelper {
   override def onViewCreated(v: View, @Nullable savedInstanceState: Bundle): Unit = {
     super.onViewCreated(v, savedInstanceState)
 
-    degradedWarningTextView
-    degradedConfirmationTextView
     callingHeader
     callingMiddle
     callingControls
@@ -88,11 +76,26 @@ class ControlsFragment extends FragmentHelper {
 
     controller.callConvId.onChanged.onUi(_ => restart())
 
-    //ensure activity gets killed to allow content to change if the conv degrades (no need to kill activity on audio call)
     (for {
-      degraded <- controller.convDegraded
-      video    <- controller.isVideoCall
-    } yield degraded && video).onChanged.filter(_ == true).onUi(_ => getActivity.finish())
+      incoming <- controller.isCallIncoming
+      Some(degradationText) <- controller.degradationWarningText
+    } yield (incoming, degradationText)).onUi { case (incoming, degradationText) =>
+      val builder = new AlertDialog.Builder(getActivity)
+      builder
+        .setTitle(R.string.calling_degraded_title)
+        .setMessage(degradationText)
+        .setCancelable(false)
+        .setPositiveButton(if (incoming) android.R.string.ok else R.string.calling_ongoing_call_start_anyway, new DialogInterface.OnClickListener {
+          override def onClick(dialog: DialogInterface, which: Int): Unit = controller.continueDegradedCall()
+        })
+
+      if (!incoming)
+        builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener {
+          override def onClick(dialog: DialogInterface, which: Int): Unit = controller.leaveCall()
+        })
+
+      builder.create().show()
+    }
   }
 
   override def onStart(): Unit = {

@@ -25,33 +25,6 @@
     android:background="@color/calling_video_overlay"
     android:layout_height="match_parent">
 
-    <com.waz.zclient.ui.text.TypefaceTextView
-        android:id="@+id/degraded_warning"
-        android:layout_gravity="center"
-        android:layout_width="@dimen/calling__participants_max_diameter"
-        android:layout_height="wrap_content"
-        android:textAlignment="center"
-        android:ellipsize="end"
-        android:maxLines="2"
-        android:textColor="@color/text__primary_dark"
-        android:textSize="@dimen/wire__text_size__regular"
-        android:layout_marginBottom="@dimen/wire__padding__8"
-        app:w_font="@string/wire__typeface__light"
-        android:visibility="gone"/>
-
-    <com.waz.zclient.ui.text.TypefaceTextView
-        android:id="@+id/degraded_confirmation"
-        android:layout_gravity="center"
-        android:layout_width="@dimen/calling__participants_max_diameter"
-        android:layout_height="wrap_content"
-        android:textAlignment="center"
-        android:ellipsize="end"
-        android:maxLines="2"
-        android:textColor="@color/text__primary_dark"
-        android:textSize="@dimen/wire__text_size__regular"
-        app:w_font="@string/wire__typeface__light"
-        android:visibility="gone"/>
-
     <LinearLayout
         android:id="@+id/calling_controls_layout"
         android:layout_width="match_parent"

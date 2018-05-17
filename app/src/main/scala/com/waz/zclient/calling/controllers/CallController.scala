@@ -272,7 +272,7 @@ class CallController(implicit inj: Injector, cxt: WireContext, eventContext: Eve
     .disableAutowiring()
 
   val degradationWarningText = convDegraded.flatMap {
-    case false => Signal("")
+    case false => Signal(Option.empty[String])
     case true =>
       (for {
         zms <- callingZms
@@ -282,22 +282,15 @@ class CallController(implicit inj: Injector, cxt: WireContext, eventContext: Eve
           zms.usersStorage.listSignal(ids)
         }.map(_.filter(_.verified != Verification.VERIFIED).toList)
       }).flatten.map {
-        case u1 :: u2 :: _ =>
-          //TODO handle more than 2 users
-          getString(R.string.conversation__degraded_confirmation__header__multiple_user, u1.name, u2.name)
+        case u1 :: u2 :: Nil =>
+          Some(getString(R.string.conversation__degraded_confirmation__header__multiple_user, u1.name, u2.name))
+        case l if l.size > 2 =>
+          Some(getString(R.string.conversation__degraded_confirmation__header__someone))
         case List(u) =>
           //TODO handle string for case where user adds multiple clients
-          getQuantityString(R.plurals.conversation__degraded_confirmation__header__single_user, 1, u.name)
-        case _ => ""
+          Some(getQuantityString(R.plurals.conversation__degraded_confirmation__header__single_user, 1, u.name))
+        case _ => None
       }
-  }
-
-  val degradationConfirmationText = convDegraded.flatMap {
-    case false => Signal("")
-    case true => isCallOutgoing.map {
-      case true  => R.string.conversation__degraded_confirmation__place_call
-      case false => R.string.conversation__degraded_confirmation__accept_call
-    }.map(getString)
   }
 
   (for {
@@ -397,14 +390,6 @@ class CallController(implicit inj: Injector, cxt: WireContext, eventContext: Eve
     }
     r
   }
-
-  val showOngoingControls = convDegraded.flatMap {
-    case true => Signal(true)
-    case false => callState.map {
-      case OtherCalling => false
-      case _ => true
-    }
-  }.orElse(Signal(true)) //ensure that controls are ALWAYS visible in case something goes wrong...
 
   def continueDegradedCall(): Unit = callingServiceAndCurrentConvId.head.map {
     case (cs, _) => cs.continueDegradedCall()
