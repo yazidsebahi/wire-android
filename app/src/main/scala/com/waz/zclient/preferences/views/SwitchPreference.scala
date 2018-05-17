@@ -79,9 +79,7 @@ class SwitchPreference(context: Context, attrs: AttributeSet, style: Int) extend
   }
 
   switch.setOnCheckedChangeListener(checkChangeListener)
-  this.onClick {
-    setChecked(!switch.isChecked)
-  }
+  this.onClick(setChecked(!switch.isChecked))
 
   def setDisabled(disabled: Boolean) = {
     setEnabled(!disabled)
