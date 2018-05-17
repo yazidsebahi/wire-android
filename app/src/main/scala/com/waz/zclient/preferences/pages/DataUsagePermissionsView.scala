@@ -68,13 +68,13 @@ class DataUsagePermissionsView(context: Context, attrs: AttributeSet, style: Int
     }
 
     setReceivingNewsAndOffersSwitchEnabled(false)
-    am.head.flatMap(_.isReceivingNewsAndOffers).foreach { isSet =>
+    am.head.flatMap(_.hasMarketingConsent).foreach { isSet =>
       v.setChecked(isSet, disableListener = true)
       setReceivingNewsAndOffersSwitchEnabled(true)
 
       v.onCheckedChange.onUi { set =>
         setReceivingNewsAndOffersSwitchEnabled(false)
-        am.head.flatMap(_.setReceivingNewsAndOffers(set)).foreach { resp =>
+        am.head.flatMap(_.setMarketingConsent(Some(set))).foreach { resp =>
           resp match {
             case Right(_) => //
             case Left(_)  =>

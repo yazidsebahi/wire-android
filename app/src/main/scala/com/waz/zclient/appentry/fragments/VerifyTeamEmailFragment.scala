@@ -21,11 +21,14 @@ import android.app.Activity
 import android.os.Bundle
 import android.view.View
 import com.waz.ZLog
+import com.waz.content.GlobalPreferences
 import com.waz.model.{ConfirmationCode, EmailAddress}
+import com.waz.service.GlobalModule
 import com.waz.threading.Threading
 import com.waz.zclient._
 import com.waz.zclient.appentry.CreateTeamFragment
 import com.waz.zclient.appentry.DialogErrorMessage.EmailError
+import com.waz.zclient.common.controllers.BrowserController
 import com.waz.zclient.common.views.NumberCodeInput
 import com.waz.zclient.ui.text.TypefaceTextView
 import com.waz.zclient.ui.utils.KeyboardUtils
@@ -66,15 +69,20 @@ case class VerifyTeamEmailFragment() extends CreateTeamFragment{
           case Left(error) =>
             Future.successful(Some(getString(EmailError(error).bodyResource)))
           case _ =>
-            showConfirmationDialog(
-              getString(R.string.receive_news_and_offers_request_title),
-              getString(R.string.receive_news_and_offers_request_body),
-              R.string.app_entry_dialog_accept,
-              R.string.app_entry_dialog_not_now
-            ).map { confirmed =>
+            inject[GlobalModule].prefs(GlobalPreferences.ShowMarketingConsentDialog).apply().flatMap {
+              case true => showConfirmationDialogWithNeutralButton(
+                R.string.receive_news_and_offers_request_title,
+                R.string.receive_news_and_offers_request_body,
+                R.string.app_entry_dialog_privacy_policy,
+                R.string.app_entry_dialog_accept,
+                R.string.app_entry_dialog_not_now
+              )
+              case false => Future.successful(Some(false))
+            }.map { confirmed =>
               createTeamController.receiveNewsAndOffers = confirmed
               createTeamController.code = code
               showFragment(SetNameFragment(), SetNameFragment.Tag)
+              if (confirmed.isEmpty) inject[BrowserController].openUrl(getString(R.string.url_privacy_policy))
               None
             }
         }

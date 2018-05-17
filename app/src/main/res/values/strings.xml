@@ -135,8 +135,8 @@
     <string name="people_picker__search_people">PEOPLE</string>
     <string name="people_picker__search_services">SERVICES</string>
 
-    <string name="receive_news_and_offers_request_title">Do you want to receive news and product updates from Wire via email?</string>
-    <string name="receive_news_and_offers_request_body">You can unsubscribe at any time.</string>
+    <string name="receive_news_and_offers_request_title">Newsletter</string>
+    <string name="receive_news_and_offers_request_body">Do you want to receive news and product updates from Wire via email? You can unsubscribe at any time.</string>
 
     <string name="crashes_and_analytics_request_title">Help us make Wire better</string>
     <string name="crashes_and_analytics_request_body">Sending anonymous usage and crash reports helps us to improve our products and services. We do not use this information for anything else.</string>
@@ -1265,6 +1265,7 @@
     <string name="app_entry_dialog_cancel">CANCEL</string>
     <string name="app_entry_dialog_not_now">NOT NOW</string>
     <string name="app_entry_dialog_view">VIEW</string>
+    <string name="app_entry_dialog_privacy_policy">PRIVACY POLICY</string>
 
     <string name="app_entry_email_sent">Email sent</string>
     <string name="teams_set_username_subtitle">Usernames help people find you.</string>

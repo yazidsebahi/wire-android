@@ -28,5 +28,5 @@ class CreateTeamController(implicit inj: Injector, eventContext: EventContext) e
   var teamUserName = ""
   var teamUserUsername = ""
   var password = ""
-  var receiveNewsAndOffers = false
+  var receiveNewsAndOffers = Option.empty[Boolean]
 }

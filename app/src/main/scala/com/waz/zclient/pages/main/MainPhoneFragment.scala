@@ -22,9 +22,10 @@ import android.os.Bundle
 import android.support.v4.app.FragmentManager
 import android.view.{LayoutInflater, View, ViewGroup}
 import com.waz.ZLog.ImplicitTag._
+import com.waz.content.UserPreferences
 import com.waz.content.UserPreferences.CrashesAndAnalyticsRequestShown
 import com.waz.model.{ErrorData, Uid}
-import com.waz.service.ZMessaging
+import com.waz.service.{AccountManager, ZMessaging}
 import com.waz.threading.Threading
 import com.waz.utils.events.Signal
 import com.waz.utils.returning
@@ -63,6 +64,7 @@ class MainPhoneFragment extends FragmentHelper
   import Threading.Implicits.Ui
 
   private lazy val zms = inject[Signal[ZMessaging]]
+  private lazy val am  = inject[Signal[AccountManager]]
 
   private lazy val usersController        = inject[UsersController]
   private lazy val conversationController = inject[ConversationController]
@@ -102,22 +104,36 @@ class MainPhoneFragment extends FragmentHelper
     confirmationController.addConfirmationObserver(this)
     collectionController.addObserver(this)
 
-    zms.flatMap(_.userPrefs(CrashesAndAnalyticsRequestShown).signal).head.flatMap {
-      case false => showConfirmationDialog(
-        getString(R.string.crashes_and_analytics_request_title),
-        getString(R.string.crashes_and_analytics_request_body),
-        R.string.app_entry_dialog_accept,
-        R.string.app_entry_dialog_not_now
-      ).flatMap { resp =>
-        zms.head.flatMap { zms =>
-          for {
-            _ <- zms.userPrefs(CrashesAndAnalyticsRequestShown) := true
-            _ <- zms.prefs(analyticsPrefKey) := resp //we override whatever the global value is on asking the user again
-          } yield {}
+    for {
+      am <- am.head
+      analyticsShown <- am.userPrefs(CrashesAndAnalyticsRequestShown).apply()
+      _ <- if (analyticsShown) Future.successful({}) else
+        showConfirmationDialog(
+          getString(R.string.crashes_and_analytics_request_title),
+          getString(R.string.crashes_and_analytics_request_body),
+          R.string.app_entry_dialog_accept,
+          R.string.app_entry_dialog_not_now
+        ).flatMap { resp =>
+          zms.head.flatMap { zms =>
+            for {
+              _ <- zms.userPrefs(CrashesAndAnalyticsRequestShown) := true
+              _ <- zms.prefs(analyticsPrefKey) := resp //we override whatever the global value is on asking the user again
+            } yield {}
+          }
         }
-      }
-      case _ => Future.successful({})
-    }
+      askMarketingConsentAgain <- am.userPrefs(UserPreferences.AskMarketingConsentAgain).apply()
+      _ <- if (!askMarketingConsentAgain) Future.successful({}) else
+        showConfirmationDialogWithNeutralButton(
+          R.string.receive_news_and_offers_request_title,
+          R.string.receive_news_and_offers_request_body,
+          R.string.app_entry_dialog_privacy_policy,
+          R.string.app_entry_dialog_accept,
+          R.string.app_entry_dialog_not_now
+        ).map { confirmed =>
+          am.setMarketingConsent(confirmed)
+          if (confirmed.isEmpty) inject[BrowserController].openUrl(getString(R.string.url_privacy_policy))
+        }
+    } yield {}
   }
 
   override def onStop(): Unit = {

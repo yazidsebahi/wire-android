@@ -65,7 +65,7 @@ case class SetTeamPasswordFragment() extends CreateTeamFragment {
               case Left(error) =>
                 Future.successful(Some(getString(EmailError(error).bodyResource)))
               case Right(am) =>
-                am.fold(Future.successful({}))(_.setReceivingNewsAndOffers(createTeamController.receiveNewsAndOffers).map(_ => {})).map { _ =>
+                am.fold(Future.successful({}))(_.setMarketingConsent(createTeamController.receiveNewsAndOffers).map(_ => {})).map { _ =>
                     showFragment(InviteToTeamFragment(), InviteToTeamFragment.Tag)
                     None
                 }
