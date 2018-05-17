@@ -28,7 +28,9 @@ import com.waz.zclient.calling.controllers.CallController
 import com.waz.zclient.utils.DeprecationUtils
 
 class CallingActivity extends BaseActivity {
-  
+
+  lazy val controller = inject[CallController]
+
   override def onCreate(savedInstanceState: Bundle): Unit = {
     super.onCreate(savedInstanceState)
     verbose("Creating CallingActivity")
@@ -56,6 +58,16 @@ class CallingActivity extends BaseActivity {
       case f: OnBackPressedListener if f.onBackPressed() => //
       case _ => super.onBackPressed()
     }
+  }
+
+  override def onResume() = {
+    super.onResume()
+    controller.setVideoPause(pause = false)
+  }
+
+  override def onPause() = {
+    controller.setVideoPause(pause = true)
+    super.onPause()
   }
 }
 

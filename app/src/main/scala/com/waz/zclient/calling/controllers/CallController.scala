@@ -203,6 +203,23 @@ class CallController(implicit inj: Injector, cxt: WireContext, eventContext: Eve
     }
   }
 
+  def setVideoPaause(pause: Boolean): Unit = {
+    verbose(s"setVideoPause: $pause")
+    for {
+      st  <- videoSendState.head
+      cId <- callConvId.head
+      cs  <- callingService.head
+    } yield {
+      import VideoState._
+      val targetSt = st match {
+        case Started if pause => Paused
+        case Paused if !pause => Started
+        case _ => st
+      }
+      cs.setVideoSendState(cId, targetSt)
+    }
+  }
+
   private var _wasUiActiveOnCallStart = false
 
   def wasUiActiveOnCallStart = _wasUiActiveOnCallStart
