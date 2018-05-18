@@ -85,21 +85,21 @@ class CallStartController(implicit inj: Injector, cxt: WireContext, ec: EventCon
         _ = verbose(s"accepting? $acceptingCall, isJoiningCall?: $isJoiningCall, curCall: $curCall")
 
         //End any active call if it is not the one we're trying to join, confirm with the user before ending. Only proceed on confirmed
-        true <- (curCallZms, curCall) match {
+        (true, canceled) <- (curCallZms, curCall) match {
           case (Some(z), Some(c)) if !acceptingCall =>
             showConfirmationDialog(
               getString(R.string.calling_ongoing_call_title),
               getString(if (isJoiningCall) R.string.calling_ongoing_call_join_message else R.string.calling_ongoing_call_start_message),
               positiveRes = if (isJoiningCall) R.string.calling_ongoing_call_join_anyway else R.string.calling_ongoing_call_start_anyway
             ).flatMap {
-              case true  => z.calling.endCall(c.convId).map(_ => true)
-              case false => Future.successful(false)
+              case true  => z.calling.endCall(c.convId).map(_ => (true, true))
+              case false => Future.successful((false, false))
             }
-          case _ => Future.successful(true)
+          case _ => Future.successful((true, false))
         }
 
         //ignore withVideo flag if call is incoming
-        curWithVideo <- if (curCall.isDefined) isVideoCall.head else Future.successful(withVideo)
+        curWithVideo <- if (curCall.isDefined && !canceled) isVideoCall.head else Future.successful(withVideo)
         _ = verbose(s"curWithVideo: $curWithVideo")
 
         //check network state, proceed if okay
