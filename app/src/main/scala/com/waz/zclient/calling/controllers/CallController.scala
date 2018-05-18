@@ -35,7 +35,7 @@ import com.waz.zclient.calling.controllers.CallController.CallParticipantInfo
 import com.waz.zclient.common.controllers.SoundController
 import com.waz.zclient.conversation.ConversationController
 import com.waz.zclient.utils.ContextUtils._
-import com.waz.zclient.utils.{DeprecationUtils, LayoutSpec, UiStorage, UserSignal}
+import com.waz.zclient.utils.{ConversationMembersSignal, DeprecationUtils, LayoutSpec, UiStorage, UserSignal}
 import com.waz.zclient.{Injectable, Injector, R, WireContext}
 
 import scala.concurrent.duration._
@@ -171,6 +171,7 @@ class CallController(implicit inj: Injector, cxt: WireContext, eventContext: Eve
 
   val conversation = callingZms.zip(callConvId) flatMap { case (z, cId) => z.convsStorage.signal(cId) }
   val conversationName = conversation.map(_.displayName)
+  val conversationMembers = conversation.flatMap(conv => ConversationMembersSignal(conv.id))
 
   val otherUser = Signal(isGroupCall, userStorage, callConvId).flatMap {
     case (false, usersStorage, convId) =>
@@ -466,5 +467,6 @@ private class ScreenManager(implicit injector: Injector) extends Injectable {
 }
 
 object CallController {
+  val VideoCallMaxMembers:Int = 4
   case class CallParticipantInfo(userId: UserId, assetId: Option[AssetId], displayName: String, isGuest: Boolean, isVerified: Boolean, isVideoEnabled: Boolean)
 }

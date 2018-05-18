@@ -62,8 +62,8 @@ class ControlsView(val context: Context, val attrs: AttributeSet, val defStyleAt
 
     isVideoBeingSent.onUi(button.setButtonPressed)
 
-    Signal(controller.isCallIncoming, controller.isCallEstablished).map {
-      case (in, est) => est || in
+    Signal(controller.isCallIncoming, controller.isCallEstablished, controller.conversationMembers).map {
+      case (in, est, members) => (est || in) && members.size <= CallController.VideoCallMaxMembers
     }.onUi(button.setButtonActive)
   }
 
