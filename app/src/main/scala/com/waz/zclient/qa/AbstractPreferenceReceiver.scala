@@ -70,8 +70,8 @@ trait AbstractPreferenceReceiver extends BroadcastReceiver {
         Seq(RingTone, PingTone, TextTone).foreach(setUserPref(_, "silent"))
       case CRASHES_AND_ANALYTICS_REQUEST_SHOWN =>
         setUserPref(CrashesAndAnalyticsRequestShown, true)
-      case NEWS_REQUEST_SHOWN =>
-//        setUserPref() ???
+      case HIDE_NEWS_REQUEST =>
+        setUserPref(AskMarketingConsentAgain, false)
 
       case NO_CONTACT_SHARING =>
         val preferences = context.getSharedPreferences(UserPreferencesController.USER_PREFS_TAG, Context.MODE_PRIVATE)
@@ -112,7 +112,7 @@ object AbstractPreferenceReceiver {
   private val TRACKING_ID_INTENT = packageName + ".intent.action.TRACKING_ID"
 
   private final val CRASHES_AND_ANALYTICS_REQUEST_SHOWN = packageName + ".intent.action.CRASHES_AND_ANALYTICS_REQUEST_SHOWN"
-  private final val NEWS_REQUEST_SHOWN = packageName + ".intent.action.NEWS_REQUEST_SHOWN"
+  private final val HIDE_NEWS_REQUEST = packageName + ".intent.action.HIDE_NEWS_REQUEST"
 
   private lazy val DeveloperAnalyticsEnabled = PrefKey[Boolean]("DEVELOPER_TRACKING_ENABLED")
 }
