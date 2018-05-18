@@ -109,7 +109,7 @@ class CallController(implicit inj: Injector, cxt: WireContext, eventContext: Eve
   def participantInfos(take: Option[Int] = None) =
     for {
       ids         <- take.fold(participantIds)(t => participantIds.map(_.take(t)))
-      videoStates <- Signal.const(Map.empty[UserId, VideoState]) //TODO use actual video receive states
+      videoStates <- allVideoReceiveStates
       users       <- Signal.sequence(ids.map(UserSignal(_)):_*)
       teamId      <- callingZms.map(_.teamId)
     } yield
