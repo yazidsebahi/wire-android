@@ -25,7 +25,6 @@ import com.waz.service.call.CallInfo.CallState.{OtherCalling, SelfCalling, SelfC
 import com.waz.utils.events.Signal
 import com.waz.zclient.calling.controllers.CallController
 import com.waz.zclient.common.views.ChatheadView
-import com.waz.zclient.utils.ContextUtils.getDimenPx
 import com.waz.zclient.utils.RichView
 import com.waz.zclient.{R, ViewHelper}
 
@@ -43,11 +42,6 @@ class CallingMiddleLayout(val context: Context, val attrs: AttributeSet, val def
   private lazy val participants = findById[CallParticipantsView](R.id.call_participants)
 
   lazy val onShowAllClicked = participants.onShowAllClicked
-
-  override def onMeasure(widthSpec: Int, heightSpec: Int): Unit = {
-    super.onMeasure(widthSpec, heightSpec)
-    participants.setMaxRows( this.getMeasuredHeight / getDimenPx(R.dimen.user_row_height) )
-  }
 
   private val callState: Signal[CallInfo.CallState] = Signal(controller.callState, controller.prevCallStateOpt).collect {
     case (OtherCalling, _)                 => OtherCalling

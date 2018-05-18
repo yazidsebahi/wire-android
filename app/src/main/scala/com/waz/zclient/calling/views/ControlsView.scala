@@ -71,6 +71,7 @@ class ControlsView(val context: Context, val attrs: AttributeSet, val defStyleAt
     isVideoBeingSent.onUi {
       case true =>
         button.set(WireStyleKit.drawFlip, R.string.incoming__controls__ongoing__flip, flip)
+        button.setButtonPressed(false)
       case false =>
         button.set(WireStyleKit.drawSpeaker, R.string.incoming__controls__ongoing__speaker, speaker)
         controller.speakerButton.buttonState.onUi(button.setButtonPressed)

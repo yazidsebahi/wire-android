@@ -83,7 +83,7 @@ class CallParticipantsAdapter(implicit context: Context, eventContext: EventCont
 
   override def getItemCount: Int = maxRows match {
     case Some(mr) if mr < numOfParticipants => mr + 1
-    case _                                  => items.size + 1 //TODO set back to items.size
+    case _                                  => items.size
   }
 
   override def getItemId(position: Int): Long =

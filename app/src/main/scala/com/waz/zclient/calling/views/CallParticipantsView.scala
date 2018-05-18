@@ -21,8 +21,9 @@ import android.content.Context
 import android.support.v7.widget.LinearLayoutManager.VERTICAL
 import android.support.v7.widget.{LinearLayoutManager, RecyclerView}
 import android.util.AttributeSet
-import com.waz.zclient.ViewHelper
+import com.waz.zclient.{R, ViewHelper}
 import com.waz.zclient.calling.CallParticipantsAdapter
+import com.waz.zclient.utils.ContextUtils.getDimenPx
 
 class CallParticipantsView(val context: Context, val attrs: AttributeSet, val defStyleAttr: Int) extends RecyclerView(context, attrs, defStyleAttr) with ViewHelper {
   def this(context: Context, attrs: AttributeSet) = this(context, attrs, 0)
@@ -34,5 +35,8 @@ class CallParticipantsView(val context: Context, val attrs: AttributeSet, val de
   setLayoutManager(new LinearLayoutManager(context, VERTICAL, false))
   setAdapter(adapter)
 
-  def setMaxRows(maxRows: Int): Unit = adapter.setMaxRows(maxRows)
+  override def onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int): Unit = {
+    super.onLayout(changed, l, t, r, b)
+    adapter.setMaxRows((b - t) / getDimenPx(R.dimen.user_row_height))
+  }
 }

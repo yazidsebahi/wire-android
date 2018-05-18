@@ -69,6 +69,8 @@ class CallingActivity extends BaseActivity {
     controller.setVideoPause(pause = true)
     super.onPause()
   }
+
+  override def getBaseTheme: Int = R.style.Theme_Calling
 }
 
 object CallingActivity extends Injectable {

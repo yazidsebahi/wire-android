@@ -32,7 +32,7 @@ import com.waz.threading.{CancellableFuture, Threading}
 import com.waz.utils.events._
 import com.waz.zclient.calling.CallingActivity
 import com.waz.zclient.calling.controllers.CallController.CallParticipantInfo
-import com.waz.zclient.common.controllers.{SoundController, ThemeController}
+import com.waz.zclient.common.controllers.SoundController
 import com.waz.zclient.conversation.ConversationController
 import com.waz.zclient.utils.ContextUtils._
 import com.waz.zclient.utils.{DeprecationUtils, LayoutSpec, UiStorage, UserSignal}
@@ -42,8 +42,8 @@ import scala.concurrent.duration._
 
 class CallController(implicit inj: Injector, cxt: WireContext, eventContext: EventContext) extends Injectable {
 
-  import VideoState._
   import Threading.Implicits.Background
+  import VideoState._
   private implicit val uiStorage: UiStorage = inject[UiStorage]
 
   private val screenManager  = new ScreenManager
@@ -123,13 +123,16 @@ class CallController(implicit inj: Injector, cxt: WireContext, eventContext: Eve
           videoStates.get(u.id).contains(VideoState.Started))
       }
 
-  val darkTheme = isVideoCall.flatMap {
+  val darkTheme = Signal.const(true)
+  //TODO: implement dark theme
+  /*
+   isVideoCall.flatMap {
     case true => Signal.const(true)
     case _ => inject[ThemeController].darkThemeSet.map {
       case true  => true
       case false => false
     }
-  }
+  }*/
 
   val flowManager = callingZms.map(_.flowmanager)
 
