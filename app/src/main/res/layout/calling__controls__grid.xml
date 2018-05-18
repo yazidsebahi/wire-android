@@ -29,10 +29,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:clickable="true"
-        app:circleIconDimension="@dimen/calling__controls__button__dimension"
-        app:labelWidth="@dimen/calling__controls__button_label__dimension"
-        app:labelFont="@string/wire__typeface__light"
-        app:labelTextSize="@dimen/wire__text_size__smaller"
         android:paddingBottom="@dimen/wire__padding__32"
         />
 
@@ -42,10 +38,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:clickable="true"
-        app:circleIconDimension="@dimen/calling__controls__button__dimension"
-        app:labelWidth="@dimen/calling__controls__button_label__dimension"
-        app:labelFont="@string/wire__typeface__light"
-        app:labelTextSize="@dimen/wire__text_size__smaller"
         android:paddingBottom="@dimen/wire__padding__32"
         />
 
@@ -55,10 +47,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:clickable="true"
-        app:circleIconDimension="@dimen/calling__controls__button__dimension"
-        app:labelWidth="@dimen/calling__controls__button_label__dimension"
-        app:labelFont="@string/wire__typeface__light"
-        app:labelTextSize="@dimen/wire__text_size__small"
         android:paddingBottom="@dimen/wire__padding__32"
         />
 
@@ -68,8 +56,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:clickable="true"
-        app:circleIconDimension="@dimen/calling__controls__button__dimension"
-        app:labelWidth="@dimen/calling__controls__button_label__dimension"
+        app:iconDimension="@dimen/hangup_call_icon_size"
         />
 
     <com.waz.zclient.calling.views.CallControlButtonView
@@ -78,8 +65,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:clickable="true"
-        app:circleIconDimension="@dimen/calling__controls__button__dimension"
-        app:labelWidth="@dimen/calling__controls__button_label__dimension"
         />
 
     <com.waz.zclient.calling.views.CallControlButtonView
@@ -87,7 +72,5 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:clickable="true"
-        app:circleIconDimension="@dimen/calling__controls__button__dimension"
-        app:labelWidth="@dimen/calling__controls__button_label__dimension"
         />
 </merge>

@@ -19,13 +19,13 @@ package com.waz.zclient.calling.views
 
 import android.content.Context
 import android.support.v4.content.ContextCompat
-import android.util.{AttributeSet, TypedValue}
+import android.util.AttributeSet
 import android.view.Gravity
-import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
-import android.widget.{ImageView, LinearLayout}
+import android.widget.{FrameLayout, LinearLayout}
 import com.waz.utils.returning
 import com.waz.zclient.calling.views.CallControlButtonView.ButtonColor
-import com.waz.zclient.paintcode.WireDrawable
+import com.waz.zclient.paintcode.GenericStyleKitView
+import com.waz.zclient.paintcode.StyleKitView.StyleKitDrawMethod
 import com.waz.zclient.ui.text.TypefaceTextView
 import com.waz.zclient.ui.theme.{OptionsDarkTheme, OptionsLightTheme}
 import com.waz.zclient.utils.ContextUtils._
@@ -34,53 +34,33 @@ import com.waz.zclient.{R, ViewHelper}
 
 import scala.util.Try
 
+case class WireIconView()
+
 class CallControlButtonView(val context: Context, val attrs: AttributeSet, val defStyleAttr: Int) extends LinearLayout(context, attrs, defStyleAttr) with ViewHelper {
   def this(context: Context, attrs: AttributeSet) = this(context, attrs, 0)
   def this(context: Context) = this(context, null)
+
+  inflate(R.layout.call_button_view)
 
   setOrientation(LinearLayout.VERTICAL)
   setGravity(Gravity.CENTER)
   setBackgroundColor(ContextCompat.getColor(getContext, R.color.transparent))
 
-  private val (
-    circleIconDimension,
-    buttonLabelWidth,
-    labelTextSize,
-    labelFont
-    ) = Try(context.getTheme.obtainStyledAttributes(attrs, R.styleable.CallControlButtonView, 0, 0)).toOption.map { a =>
-    returning {
-      (
-        a.getDimensionPixelSize(R.styleable.CallControlButtonView_circleIconDimension, 0),
-        a.getDimensionPixelSize(R.styleable.CallControlButtonView_labelWidth, 0),
-        a.getDimensionPixelSize(R.styleable.CallControlButtonView_labelTextSize, 0),
-        a.getString(R.styleable.CallControlButtonView_labelFont))
-    } (_ => a.recycle())
-  }.getOrElse((0, 0, 0, ""))
+  private val iconDimension = Try(context.getTheme.obtainStyledAttributes(attrs, R.styleable.CallControlButtonView, 0, 0)).toOption.map { a =>
+    returning { a.getDimensionPixelSize(R.styleable.CallControlButtonView_iconDimension, 0) }(_ => a.recycle())
+  }.filter(_ != 0)
 
   private var pressed: Boolean = false
   private var active: Boolean = true
-  private var buttonDrawable = Option.empty[WireDrawable]
 
-  private val buttonView = returning(new ImageView(getContext)) { b =>
-    b.setLayoutParams(new LinearLayout.LayoutParams(circleIconDimension, circleIconDimension))
-    b.setScaleType(ImageView.ScaleType.FIT_CENTER)
-    val p = getDimenPx(R.dimen.calling_button_icon_padding)
-    b.setPadding(p, p, p, p)
-    addView(b)
-  }
-
-  private val buttonLabelView =
-    returning(new TypefaceTextView(getContext, null, R.attr.callingControlButtonLabel)) { b =>
-      b.setTextSize(TypedValue.COMPLEX_UNIT_PX, labelTextSize)
-      b.setTypeface(labelFont)
-      b.setGravity(Gravity.CENTER)
-
-      val params = if (buttonLabelWidth > 0) new LinearLayout.LayoutParams(buttonLabelWidth, WRAP_CONTENT)
-      else new LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
-      params.topMargin = getDimenPx(R.dimen.calling__controls__button__label__margin_top)
-
-      addView(b, params)
+  private val buttonBackground = findById[FrameLayout](R.id.icon_background)
+  private val iconView = returning(findById[GenericStyleKitView](R.id.icon)) { icon =>
+    iconDimension.foreach { size =>
+      icon.getLayoutParams.height = size
+      icon.getLayoutParams.width = size
     }
+  }
+  private val buttonLabelView = findById[TypefaceTextView](R.id.text)
 
   setButtonColors()
 
@@ -96,26 +76,21 @@ class CallControlButtonView(val context: Context, val attrs: AttributeSet, val d
 
   private def setButtonColors(): Unit = {
     if (!active) {
-      buttonDrawable.foreach(_.setColor(getColor(R.color.graphite_64)))
-      buttonView.setBackground(ContextCompat.getDrawable(getContext, R.drawable.selector__icon_button__background__calling_disabled))
+      iconView.setColor(getColor(R.color.graphite_64))
+      buttonBackground.setBackground(ContextCompat.getDrawable(getContext, R.drawable.selector__icon_button__background__calling_disabled))
     } else if (pressed) {
-      buttonDrawable.foreach(_.setColor(new OptionsLightTheme(getContext).getTextColorPrimarySelector.getDefaultColor))
-      buttonView.setBackground(ContextCompat.getDrawable(getContext, R.drawable.selector__icon_button__background__calling_toggled))
+      iconView.setColor(new OptionsLightTheme(getContext).getTextColorPrimarySelector.getDefaultColor)
+      buttonBackground.setBackground(ContextCompat.getDrawable(getContext, R.drawable.selector__icon_button__background__calling_toggled))
     } else {
-      buttonDrawable.foreach(_.setColor(new OptionsDarkTheme(getContext).getTextColorPrimarySelector.getDefaultColor))
-      buttonView.setBackground(ContextCompat.getDrawable(getContext, R.drawable.selector__icon_button__background__calling))
+      iconView.setColor(new OptionsDarkTheme(getContext).getTextColorPrimarySelector.getDefaultColor)
+      buttonBackground.setBackground(ContextCompat.getDrawable(getContext, R.drawable.selector__icon_button__background__calling))
     }
-  }
-
-  def setButtonDrawable(drawable: WireDrawable): Unit = {
-    buttonView.setImageDrawable(drawable)
-    buttonDrawable = Some(drawable)
   }
 
   def setText(stringId: Int): Unit = buttonLabelView.setText(getResources.getText(stringId))
 
-  def set(drawable: WireDrawable, labelStringId: Int, onClick: () => Unit, color: ButtonColor = ButtonColor.Transparent): Unit = {
-    setButtonDrawable(drawable)
+  def set(icon: StyleKitDrawMethod, labelStringId: Int, onClick: () => Unit, color: ButtonColor = ButtonColor.Transparent): Unit = {
+    iconView.setOnDraw(icon)
     setText(labelStringId)
     setColor(color)
     this.onClick { if (active) onClick() }
@@ -130,8 +105,8 @@ class CallControlButtonView(val context: Context, val attrs: AttributeSet, val d
       case Transparent => (R.drawable.selector__icon_button__background__calling, R.color.wire__text_color_primary_dark_selector)
     }
 
-    buttonDrawable.foreach(_.setColor(getColorStateList(textColor).getDefaultColor))
-    buttonView.setBackground(getDrawable(drawable))
+    iconView.setColor(getColorStateList(textColor).getDefaultColor)
+    buttonBackground.setBackground(getDrawable(drawable))
   }
 
 }

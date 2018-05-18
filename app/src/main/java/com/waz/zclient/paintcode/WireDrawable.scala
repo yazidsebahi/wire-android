@@ -132,28 +132,3 @@ case class VideoIcon(colorRes: Int)(implicit context: Context) extends WireDrawa
   setColor(getColor(colorRes))
   override def draw(canvas: Canvas) = drawCamera(canvas, getDrawingRect, ResizingBehavior.AspectFit, paint.getColor)
 }
-
-case class AcceptCallIcon()(implicit context: Context) extends WireDrawable {
-  setColor(Color.WHITE)
-  override def draw(canvas: Canvas) = drawAcceptCall(canvas, getDrawingRect, ResizingBehavior.AspectFit, paint.getColor)
-}
-
-case class HangUpCallIcon()(implicit context: Context) extends WireDrawable {
-  setColor(Color.WHITE)
-  override def draw(canvas: Canvas) = drawHangUpCall(canvas, getDrawingRect, ResizingBehavior.AspectFit, paint.getColor)
-}
-
-case class SpeakerIcon()(implicit context: Context) extends WireDrawable {
-  setColor(Color.WHITE)
-  override def draw(canvas: Canvas) = drawSpeaker(canvas, getDrawingRect, ResizingBehavior.AspectFit, paint.getColor)
-}
-
-case class MuteIcon()(implicit context: Context) extends WireDrawable {
-  setColor(Color.WHITE)
-  override def draw(canvas: Canvas) = drawMute(canvas, getDrawingRect, ResizingBehavior.AspectFit, paint.getColor)
-}
-
-case class FlipIcon()(implicit context: Context) extends WireDrawable {
-  setColor(Color.WHITE)
-  override def draw(canvas: Canvas) = drawFlip(canvas, getDrawingRect, ResizingBehavior.AspectFit, paint.getColor)
-}

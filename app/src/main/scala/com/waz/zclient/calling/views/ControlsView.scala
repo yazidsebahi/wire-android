@@ -52,13 +52,13 @@ class ControlsView(val context: Context, val attrs: AttributeSet, val defStyleAt
   }
   // first row
   returning(findById[CallControlButtonView](R.id.mute_call)) { button =>
-    button.set(MuteIcon(), R.string.incoming__controls__ongoing__mute, mute)
+    button.set(WireStyleKit.drawMute, R.string.incoming__controls__ongoing__mute, mute)
 
     controller.isMuted.onUi(button.setButtonPressed)
   }
 
   returning(findById[CallControlButtonView](R.id.video_call)) { button =>
-    button.set(VideoIcon(R.color.white), R.string.incoming__controls__ongoing__video, video)
+    button.set(WireStyleKit.drawCamera, R.string.incoming__controls__ongoing__video, video)
 
     isVideoBeingSent.onUi(button.setButtonPressed)
 
@@ -70,27 +70,27 @@ class ControlsView(val context: Context, val attrs: AttributeSet, val defStyleAt
   returning(findById[CallControlButtonView](R.id.speaker_flip_call)) { button =>
     isVideoBeingSent.onUi {
       case true =>
-        button.set(FlipIcon(), R.string.incoming__controls__ongoing__flip, flip)
+        button.set(WireStyleKit.drawFlip, R.string.incoming__controls__ongoing__flip, flip)
       case false =>
-        button.set(SpeakerIcon(), R.string.incoming__controls__ongoing__speaker, speaker)
+        button.set(WireStyleKit.drawSpeaker, R.string.incoming__controls__ongoing__speaker, speaker)
         controller.speakerButton.buttonState.onUi(button.setButtonPressed)
     }
   }
 
   // second row
   returning(findById[CallControlButtonView](R.id.reject_call)) { button =>
-    button.set(HangUpCallIcon(), R.string.empty_string, leave, ButtonColor.Red)
+    button.set(WireStyleKit.drawHangUpCall, R.string.empty_string, leave, ButtonColor.Red)
     incomingNotEstablished.onUi(button.setVisible)
   }
 
   returning(findById[CallControlButtonView](R.id.end_call)) { button =>
-    button.set(HangUpCallIcon(), R.string.empty_string, leave, ButtonColor.Red)
+    button.set(WireStyleKit.drawHangUpCall, R.string.empty_string, leave, ButtonColor.Red)
 
     incomingNotEstablished.map(!_).onUi(button.setVisible)
   }
 
   returning(findById[CallControlButtonView](R.id.accept_call)) { button =>
-    button.set(AcceptCallIcon(), R.string.empty_string, accept, ButtonColor.Green)
+    button.set(WireStyleKit.drawAcceptCall, R.string.empty_string, accept, ButtonColor.Green)
 
     incomingNotEstablished.onUi(button.setVisible)
   }

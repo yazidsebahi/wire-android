@@ -18,43 +18,35 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -->
-<FrameLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:background="@color/calling_video_overlay"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
-    <LinearLayout
-        android:id="@+id/calling_controls_layout"
+    <com.waz.zclient.calling.views.CallingHeader
+        android:id="@+id/calling_header"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_gravity="top|center"
+        android:layout_marginTop="@dimen/wire__padding__regular" />
 
-        <com.waz.zclient.calling.views.CallingHeader
-            android:id="@+id/calling_header"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_gravity="top|center"
-            android:layout_marginTop="@dimen/wire__padding__regular" />
+    <com.waz.zclient.calling.views.CallingMiddleLayout
+        android:id="@+id/calling_middle"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="@dimen/wire__padding__32"
+        android:layout_marginBottom="@dimen/wire__padding__32"
+        android:layout_weight="1" />
 
-        <com.waz.zclient.calling.views.CallingMiddleLayout
-            android:id="@+id/calling_middle"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_gravity="center"
-            android:layout_marginTop="@dimen/wire__padding__32"
-            android:layout_marginBottom="@dimen/wire__padding__32"
-            android:layout_weight="1" />
+    <com.waz.zclient.calling.views.ControlsView
+        android:id="@+id/controls_grid"
+        android:layout_width="@dimen/calling__controls__max_width"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center"
+        android:layout_marginBottom="@dimen/wire__padding__32" />
 
-        <com.waz.zclient.calling.views.ControlsView
-            android:id="@+id/controls_grid"
-            android:layout_width="@dimen/calling__controls__max_width"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|center"
-            android:layout_marginBottom="@dimen/wire__padding__32" />
-
-    </LinearLayout>
-
-</FrameLayout>
+</LinearLayout>

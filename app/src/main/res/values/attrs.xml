@@ -198,10 +198,7 @@
     </declare-styleable>
 
     <declare-styleable name="CallControlButtonView">
-        <attr name="circleIconDimension" format="dimension" />
-        <attr name="labelWidth" format="dimension" />
-        <attr name="labelTextSize" format="dimension" />
-        <attr name="labelFont" format="string" />
+        <attr name="iconDimension" format="dimension" />
     </declare-styleable>
 
     <declare-styleable name="BoundLayout">
