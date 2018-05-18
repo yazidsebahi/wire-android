@@ -98,6 +98,7 @@ class ConversationFragment extends BaseFragment[ConversationFragment.Container] 
   private lazy val errorsController       = inject[ErrorsController]
   private lazy val callController         = inject[CallController]
   private lazy val callStartController    = inject[CallStartController]
+  private lazy val accountsController     = inject[UserAccountsController]
 
   private val previewShown = Signal(false)
   private lazy val convChange = convController.convChanged.filter { _.to.isDefined }
@@ -242,14 +243,18 @@ class ConversationFragment extends BaseFragment[ConversationFragment.Container] 
       case conv if conv.isActive =>
         inflateCollectionIcon()
         (for {
-          acc  <- zms.map(_.selfUserId).head
-          call <- callController.currentCallOpt.head
-        } yield (acc, call)).flatMap {
-          case (acc, Some(call)) if call.convId == conv.id && call.account == acc => Future.successful(None)
-          case _ => convController.hasOtherParticipants(conv.id).map {
-            case true => Some(R.menu.conversation_header_menu_video)
-            case false => None
-          }
+          acc                <- zms.map(_.selfUserId).head
+          call               <- callController.currentCallOpt.head
+          isCallActive       = call.exists(_.convId == conv.id) && call.exists(_.account == acc)
+          participantsNumber <- convController.participantsIds(conv.id).map(_.size)
+          isTeam             <- accountsController.isTeam.head
+        } yield (isCallActive, participantsNumber, isTeam)).map {
+          case (true, _, _) =>
+            None
+          case (false, pn, team) if pn == 1 || (team && pn <= CallController.VideoCallMaxMembers) =>
+            Some(R.menu.conversation_header_menu_video)
+          case _ =>
+            Some(R.menu.conversation_header_menu_audio)
         }.foreach { id =>
           toolbar.getMenu.clear()
           id.foreach(toolbar.inflateMenu)
