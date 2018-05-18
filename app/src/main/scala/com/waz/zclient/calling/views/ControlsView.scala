@@ -27,6 +27,7 @@ import com.waz.utils.events.{EventStream, Signal}
 import com.waz.utils.returning
 import com.waz.zclient.calling.controllers.CallController
 import com.waz.zclient.calling.views.CallControlButtonView.ButtonColor
+import com.waz.zclient.common.controllers.UserAccountsController
 import com.waz.zclient.paintcode._
 import com.waz.zclient.utils.RichView
 import com.waz.zclient.{R, ViewHelper}
@@ -40,6 +41,7 @@ class ControlsView(val context: Context, val attrs: AttributeSet, val defStyleAt
   setRowCount(2)
 
   private lazy val controller = inject[CallController]
+  private lazy val accountsController = inject[UserAccountsController]
 
   val onButtonClick = EventStream[Unit]
 
@@ -62,8 +64,15 @@ class ControlsView(val context: Context, val attrs: AttributeSet, val defStyleAt
 
     isVideoBeingSent.onUi(button.setButtonPressed)
 
-    Signal(controller.isCallIncoming, controller.isCallEstablished, controller.conversationMembers).map {
-      case (in, est, members) => (est || in) && members.size <= CallController.VideoCallMaxMembers
+    Signal(
+      controller.isCallIncoming,
+      controller.isCallEstablished,
+      controller.conversationMembers,
+      controller.showVideoView,
+      accountsController.isTeam
+    ).map {
+      case (in, est, members, show, team) =>
+        (est || in) && (show || team) && members.size <= CallController.VideoCallMaxMembers
     }.onUi(button.setButtonActive)
   }
 
