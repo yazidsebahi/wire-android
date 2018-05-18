@@ -83,7 +83,7 @@ class CallingNotificationsController(implicit cxt: WireContext, eventContext: Ev
       val title = if (group) getString(R.string.system_notification__group_call_title, callerName, conv.displayName) else conv.displayName
 
       val builder = DeprecationUtils.getBuilder(cxt)
-        .setSmallIcon(R.drawable.ic_menu_logo)
+        .setSmallIcon(R.drawable.call_notification_icon)
         .setLargeIcon(bmp.orNull)
         .setContentTitle(title)
         .setContentText(message)
