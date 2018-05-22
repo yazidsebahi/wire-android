@@ -22,10 +22,10 @@ import android.os.Bundle
 import android.support.v4.app.FragmentManager
 import android.view.{LayoutInflater, View, ViewGroup}
 import com.waz.ZLog.ImplicitTag._
-import com.waz.content.UserPreferences
+import com.waz.content.{GlobalPreferences, UserPreferences}
 import com.waz.content.UserPreferences.CrashesAndAnalyticsRequestShown
 import com.waz.model.{ErrorData, Uid}
-import com.waz.service.{AccountManager, ZMessaging}
+import com.waz.service.{AccountManager, GlobalModule, ZMessaging}
 import com.waz.threading.Threading
 import com.waz.utils.events.Signal
 import com.waz.utils.returning
@@ -105,7 +105,8 @@ class MainPhoneFragment extends FragmentHelper
     collectionController.addObserver(this)
 
     for {
-      am <- am.head
+      true <- inject[GlobalModule].prefs(GlobalPreferences.ShowMarketingConsentDialog).apply()
+      am   <- am.head
       analyticsShown <- am.userPrefs(CrashesAndAnalyticsRequestShown).apply()
       _ <- if (analyticsShown) Future.successful({}) else
         showConfirmationDialog(
