@@ -40,8 +40,7 @@
                 <action android:name="${applicationId}.intent.action.TRACKING_ID" />
                 <action android:name="${applicationId}.intent.action.ENABLE_TRACKING" />
                 <action android:name="${applicationId}.intent.action.DISABLE_TRACKING" />
-                <action android:name="${applicationId}.intent.action.CRASHES_AND_ANALYTICS_REQUEST_SHOWN" />
-                <action android:name="${applicationId}.intent.action.HIDE_NEWS_REQUEST" />
+                <action android:name="${applicationId}.intent.action.HIDE_GDPR_POPUPS" />
             </intent-filter>
         </receiver>
 
