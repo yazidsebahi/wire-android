@@ -315,8 +315,8 @@
     <string name="calling__header__joining">joining</string>
     <string name="calling__header__outgoing_subtitle">ringing</string>
     <string name="calling__header__outgoing_video_subtitle">ringing</string>
-    <string name="calling__header__incoming_subtitle">calling</string>
-    <string name="calling__header__incoming_subtitle__video">video calling</string>
+    <string name="calling__header__incoming_subtitle">calling…</string>
+    <string name="calling__header__incoming_subtitle__video">calling…</string>
 
     <string name="call_banner_joining">JOINING</string>
     <string name="call_banner_outgoing">RINGING</string>
