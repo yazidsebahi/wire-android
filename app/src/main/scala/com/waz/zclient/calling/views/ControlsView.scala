@@ -72,7 +72,7 @@ class ControlsView(val context: Context, val attrs: AttributeSet, val defStyleAt
       accountsController.isTeam
     ).map {
       case (in, est, members, show, team) =>
-        (est || in) && (show || team) && members.size <= CallController.VideoCallMaxMembers
+        (est || in) && (show || team || members.size == 2) && members.size <= CallController.VideoCallMaxMembers
     }.onUi(button.setButtonActive)
   }
 

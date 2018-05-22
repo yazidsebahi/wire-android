@@ -121,6 +121,7 @@ class CallingFragment extends FragmentHelper {
   private lazy val controlsFragment = ControlsFragment.newInstance
 
   private lazy val controller = inject[CallController]
+  private lazy val themeController = inject[ThemeController]
   private lazy val previewCardView = view[CardView](R.id.preview_card_view)
 
   private var viewMap = Map[UserId, UserVideoView]()
@@ -140,11 +141,10 @@ class CallingFragment extends FragmentHelper {
       val isVideoBeingSent = vrs.get(selfId).contains(VideoState.Started)
 
       vh.foreach { v =>
-        val views = vrs.toSeq.collect {
+        val videoUsers = vrs.toSeq.collect {
           case (userId, VideoState.Started | VideoState.Paused | VideoState.BadConnection) => userId
-        }.map { uId => viewMap.getOrElse(uId, createView(uId))}
-
-        v.removeAllViews()
+        }
+        val views = videoUsers.map { uId => viewMap.getOrElse(uId, createView(uId))}
 
         viewMap.get(selfId).foreach { selfView =>
           previewCardView.foreach { cardView =>
@@ -194,16 +194,14 @@ class CallingFragment extends FragmentHelper {
             v.addView(r)
         }
         //TODO: ask AVS why VideoRenderer stops playing video after resizing view
-/*
         val viewsToRemove = viewMap.filter {
           case (uid, selfView) if uid == selfId => !gridViews.contains(selfView)
-          case (uId, _) => !vrs.keys.toSet.contains(uId)
+          case (uId, _) => !videoUsers.contains(uId)
         }
         viewsToRemove.foreach { case (_, view) =>
           v.removeView(view)
         }
-        viewMap = viewMap.filter { case (uId, _) => vrs.keys.toSet.contains(uId) }
-        */
+        viewMap = viewMap.filter { case (uId, _) => videoUsers.contains(uId) }
       }
     }
   }
