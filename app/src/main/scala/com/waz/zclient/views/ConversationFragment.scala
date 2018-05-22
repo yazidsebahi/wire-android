@@ -251,7 +251,7 @@ class ConversationFragment extends BaseFragment[ConversationFragment.Container] 
         } yield (isCallActive, participantsNumber, isTeam)).map {
           case (true, _, _) =>
             None
-          case (false, pn, team) if pn == 1 || (team && pn <= CallController.VideoCallMaxMembers) =>
+          case (false, pn, team) if pn == 2 || (team && pn <= CallController.VideoCallMaxMembers) =>
             Some(R.menu.conversation_header_menu_video)
           case _ =>
             Some(R.menu.conversation_header_menu_audio)
