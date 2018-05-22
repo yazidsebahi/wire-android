@@ -290,7 +290,7 @@ class ConversationFragment extends BaseFragment[ConversationFragment.Container] 
       override def onMenuItemClick(item: MenuItem): Boolean =
         item.getItemId match {
           case R.id.action_audio_call | R.id.action_video_call =>
-            callStartController.startCallInCurrentConv(withVideo = item.getItemId == R.id.action_video_call)
+            callStartController.startCallInCurrentConv(withVideo = item.getItemId == R.id.action_video_call, forceOption = true)
             cursorView.closeEditMessage(false)
             true
           case _ => false

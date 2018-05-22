@@ -51,11 +51,11 @@ class CallStartController(implicit inj: Injector, cxt: WireContext, ec: EventCon
     autoAnswer <- prefs.flatMap(_.preference(AutoAnswerCallPrefKey).signal)
   } if (call.state.contains(CallState.OtherCalling) && autoAnswer) startCall(call.account, call.convId)
 
-  def startCallInCurrentConv(withVideo: Boolean) = {
+  def startCallInCurrentConv(withVideo: Boolean, forceOption: Boolean = false) = {
     (for {
       Some(zms)  <- activeZmsOpt.head
       Some(conv) <- zms.convsStats.selectedConversationId.head
-      _          <- startCall(zms.selfUserId, conv, withVideo)
+      _          <- startCall(zms.selfUserId, conv, withVideo, forceOption)
     } yield {})
       .recover {
         case NonFatal(e) => warn("Failed to start call", e)
@@ -68,7 +68,7 @@ class CallStartController(implicit inj: Injector, cxt: WireContext, ec: EventCon
       case None => Future.successful(warn("No active call to accept..."))
     }
 
-  def startCall(account: UserId, conv: ConvId, withVideo: Boolean = false): Future[Unit] = {
+  def startCall(account: UserId, conv: ConvId, withVideo: Boolean = false, forceOption: Boolean = false): Future[Unit] = {
     verbose(s"startCall: account: $account, conv: $conv")
     if (PhoneUtils.getPhoneState(cxt) != PhoneState.IDLE) showErrorDialog(R.string.calling__cannot_start__title, R.string.calling__cannot_start__message)
     else {
@@ -99,7 +99,7 @@ class CallStartController(implicit inj: Injector, cxt: WireContext, ec: EventCon
         }
 
         //ignore withVideo flag if call is incoming
-        curWithVideo <- if (curCall.isDefined && !canceled) isVideoCall.head else Future.successful(withVideo)
+        curWithVideo <- if (curCall.isDefined && !canceled && !forceOption) isVideoCall.head else Future.successful(withVideo)
         _ = verbose(s"curWithVideo: $curWithVideo")
 
         //check network state, proceed if okay
@@ -123,7 +123,7 @@ class CallStartController(implicit inj: Injector, cxt: WireContext, ec: EventCon
         //check or request permissions
         hasPerms <- inject[PermissionsService].requestAllPermissions(if (curWithVideo) Set(CAMERA, RECORD_AUDIO) else Set(RECORD_AUDIO))
         _ <-
-        if (hasPerms) newCallZms.calling.startCall(newCallConv.id, curWithVideo)
+        if (hasPerms) newCallZms.calling.startCall(newCallConv.id, curWithVideo, forceOption)
         else showPermissionsErrorDialog(
           R.string.calling__cannot_start__title,
           if (curWithVideo) R.string.calling__cannot_start__no_video_permission__message else R.string.calling__cannot_start__no_permission__message
