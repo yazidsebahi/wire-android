@@ -30,8 +30,8 @@ import com.waz.threading.Threading
 import com.waz.utils.events.{EventContext, Signal}
 import com.waz.utils.returning
 import com.waz.zclient._
+import com.waz.zclient.common.controllers.ThemeController.Theme
 import com.waz.zclient.common.controllers.{IntegrationsController, UserAccountsController}
-import com.waz.zclient.common.views.SingleUserRowView.Theme
 import com.waz.zclient.common.views.{SingleUserRowView, TopUserChathead}
 import com.waz.zclient.paintcode.{CreateGroupIcon, GuestIcon}
 import com.waz.zclient.ui.text.TypefaceTextView
@@ -387,7 +387,7 @@ object SearchUIAdapter {
     view.onClick(userData.map(_.id).foreach(callback.onUserClicked))
     view.showArrow(false)
     view.showCheckbox(false)
-    view.setTheme(Theme.TransparentDark)
+    view.setTheme(Theme.Dark, background = false)
 
     def bind(userData: UserData, teamId: Option[TeamId] = None): Unit = {
       this.userData = Some(userData)
@@ -414,7 +414,7 @@ object SearchUIAdapter {
     view.onClick(integrationData.foreach(i => callback.onIntegrationClicked(i)))
     view.showArrow(false)
     view.showCheckbox(false)
-    view.setTheme(Theme.TransparentDark)
+    view.setTheme(Theme.Dark, background = false)
 
     def bind(integrationData: IntegrationData): Unit = {
       this.integrationData = Some(integrationData)

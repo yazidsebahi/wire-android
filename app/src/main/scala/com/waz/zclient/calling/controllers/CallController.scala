@@ -32,7 +32,8 @@ import com.waz.threading.{CancellableFuture, Threading}
 import com.waz.utils.events._
 import com.waz.zclient.calling.CallingActivity
 import com.waz.zclient.calling.controllers.CallController.CallParticipantInfo
-import com.waz.zclient.common.controllers.SoundController
+import com.waz.zclient.common.controllers.ThemeController.Theme
+import com.waz.zclient.common.controllers.{SoundController, ThemeController}
 import com.waz.zclient.conversation.ConversationController
 import com.waz.zclient.utils.ContextUtils._
 import com.waz.zclient.utils.{ConversationMembersSignal, DeprecationUtils, LayoutSpec, UiStorage, UserSignal}
@@ -51,6 +52,7 @@ class CallController(implicit inj: Injector, cxt: WireContext, eventContext: Eve
   val conversationController = inject[ConversationController]
   val networkMode            = inject[NetworkModeService].networkMode
   val accounts               = inject[AccountsService]
+  val themeController        = inject[ThemeController]
 
   //The zms of the account that's currently active (if any)
   val activeZmsOpt = inject[Signal[Option[ZMessaging]]]
@@ -90,21 +92,25 @@ class CallController(implicit inj: Injector, cxt: WireContext, eventContext: Eve
 
   val isMuted           = currentCall.map(_.muted)
   val startedAsVideo    = currentCall.map(_.startedAsVideoCall)
-  val isVideoCall       = currentCall.map { c =>
-    c.videoSendState != VideoState.Stopped || c.videoReceiveState.exists { case (_, st) => st != VideoState.Stopped }
-  }
+
 
   val videoSendState    = currentCall.map(_.videoSendState)
   val videoReceiveStates = currentCall.map(_.videoReceiveState)
   val allVideoReceiveStates = Signal(callingZms.map(_.selfUserId), videoReceiveStates, videoSendState).map {
     case (selfId, others, self) => others.updated(selfId, self)
   }
+  val isVideoCall       = allVideoReceiveStates.map(_.exists(_._2 != VideoState.Stopped))
   val isGroupCall       = currentCall.map(_.isGroup)
   val cbrEnabled        = currentCall.map(_.isCbrEnabled)
   val duration          = currentCall.flatMap(_.durationFormatted)
   val otherUserId       = currentCall.map(_.others.headOption)
 
   val participantIds = currentCall.map(_.others.toVector)
+
+  val theme: Signal[Theme] = isVideoCall.flatMap {
+    case true => Signal.const(Theme.Dark)
+    case false => themeController.currentTheme
+  }
 
   def participantInfos(take: Option[Int] = None) =
     for {
@@ -123,18 +129,7 @@ class CallController(implicit inj: Injector, cxt: WireContext, eventContext: Eve
           videoStates.get(u.id).contains(VideoState.Started))
       }
 
-  val darkTheme = Signal.const(true)
-  //TODO: implement dark theme
-  /*
-   isVideoCall.flatMap {
-    case true => Signal.const(true)
-    case _ => inject[ThemeController].darkThemeSet.map {
-      case true  => true
-      case false => false
-    }
-  }*/
-
-  val flowManager = callingZms.map(_.flowmanager)
+   val flowManager = callingZms.map(_.flowmanager)
 
   val captureDevices = flowManager.flatMap(fm => Signal.future(fm.getVideoCaptureDevices))
 
@@ -381,7 +376,7 @@ class CallController(implicit inj: Injector, cxt: WireContext, eventContext: Eve
     }
   }
 
-  def stateMessageText(userId: UserId): Signal[Option[String]] = Signal(callState, cameraFailed, allVideoReceiveStates.map(_.get(userId).getOrElse(Unknown)), conversationName).map { vs =>
+  def stateMessageText(userId: UserId): Signal[Option[String]] = Signal(callState, cameraFailed, allVideoReceiveStates.map(_.getOrElse(userId, Unknown)), conversationName).map { vs =>
     verbose(s"Message Text: $vs")
     val r = vs match {
       case (SelfCalling,   true, _,             _)             => Option(cxt.getString(R.string.calling__self_preview_unavailable_long))

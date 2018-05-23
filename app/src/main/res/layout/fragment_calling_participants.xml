@@ -47,6 +47,7 @@
             android:textSize="@dimen/wire__text_size__smaller"
             android:textColor="@color/white"
             app:w_font="@string/wire__typeface__medium"
+            app:themedColor="Primary"
         />
 
     </android.support.v7.widget.Toolbar>

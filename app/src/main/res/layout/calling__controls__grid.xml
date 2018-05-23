@@ -30,7 +30,7 @@
         android:layout_height="wrap_content"
         android:clickable="true"
         android:paddingBottom="@dimen/wire__padding__32"
-        />
+        android:focusable="true"/>
 
     <com.waz.zclient.calling.views.CallControlButtonView
         android:id="@+id/video_call"
@@ -39,7 +39,7 @@
         android:layout_gravity="center"
         android:clickable="true"
         android:paddingBottom="@dimen/wire__padding__32"
-        />
+        android:focusable="true"/>
 
     <!-- speaker and flip buttons use the same position -->
     <com.waz.zclient.calling.views.CallControlButtonView
@@ -48,7 +48,7 @@
         android:layout_height="wrap_content"
         android:clickable="true"
         android:paddingBottom="@dimen/wire__padding__32"
-        />
+        android:focusable="true"/>
 
     <com.waz.zclient.calling.views.CallControlButtonView
         android:id="@+id/reject_call"
@@ -57,7 +57,7 @@
         android:layout_gravity="center"
         android:clickable="true"
         app:iconDimension="@dimen/hangup_call_icon_size"
-        />
+        android:focusable="true"/>
 
     <com.waz.zclient.calling.views.CallControlButtonView
         android:id="@+id/end_call"
@@ -65,12 +65,13 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:clickable="true"
-        />
+        app:iconDimension="@dimen/hangup_call_icon_size"
+        android:focusable="true"/>
 
     <com.waz.zclient.calling.views.CallControlButtonView
         android:id="@+id/accept_call"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:clickable="true"
-        />
+        android:focusable="true"/>
 </merge>

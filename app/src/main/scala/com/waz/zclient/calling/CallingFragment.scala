@@ -33,10 +33,11 @@ import com.waz.threading.SerialDispatchQueue
 import com.waz.utils.events.Signal
 import com.waz.utils.returning
 import com.waz.zclient.calling.controllers.CallController
-import com.waz.zclient.common.controllers.ThemeController
+import com.waz.zclient.common.controllers.{ThemeController, ThemeControllingFrameLayout}
 import com.waz.zclient.common.views.BackgroundDrawable
 import com.waz.zclient.common.views.ImageController.{ImageSource, WireImage}
 import com.waz.zclient.ui.utils.ColorUtils
+import com.waz.zclient.utils.ContextUtils._
 import com.waz.zclient.{FragmentHelper, R, ViewHelper}
 
 class VideoPreview2(context: Context) extends VideoPreview(context) {
@@ -207,8 +208,15 @@ class CallingFragment extends FragmentHelper {
     }
   }
 
+  override def onCreate(savedInstanceState: Bundle): Unit = {
+    super.onCreate(savedInstanceState)
+    controller.theme.map(themeController.getTheme).onUi(theme => videoGrid.foreach(_.setBackgroundColor(getStyledColor(R.attr.wireBackgroundColor, theme))))
+  }
+
   override def onCreateView(inflater: LayoutInflater, container: ViewGroup, savedInstanceState: Bundle) =
-    inflater.inflate(R.layout.fragment_calling, container, false)
+    returning(inflater.inflate(R.layout.fragment_calling, container, false)) { v =>
+      controller.theme(t => v.asInstanceOf[ThemeControllingFrameLayout].theme ! Some(t))
+    }
 
   override def onViewCreated(view: View, savedInstanceState: Bundle) = {
     super.onViewCreated(view, savedInstanceState)

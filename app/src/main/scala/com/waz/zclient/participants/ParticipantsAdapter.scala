@@ -34,8 +34,8 @@ import com.waz.threading.Threading
 import com.waz.utils.events._
 import com.waz.utils.returning
 import com.waz.zclient.common.controllers.ThemeController
+import com.waz.zclient.common.controllers.ThemeController.Theme
 import com.waz.zclient.common.views.SingleUserRowView
-import com.waz.zclient.common.views.SingleUserRowView.Theme
 import com.waz.zclient.conversation.ConversationController
 import com.waz.zclient.paintcode.{ForwardNavigationIcon, GuestIconWithColor}
 import com.waz.zclient.ui.text.TypefaceEditText.OnSelectionChangedListener
@@ -128,7 +128,7 @@ class ParticipantsAdapter(numOfColumns: Int)(implicit context: Context, injector
     case UserRow =>
       val view = LayoutInflater.from(parent.getContext).inflate(R.layout.single_user_row, parent, false).asInstanceOf[SingleUserRowView]
       view.showArrow(true)
-      view.setTheme(if (themeController.isDarkTheme) Theme.Dark else Theme.Light)
+      view.setTheme(if (themeController.isDarkTheme) Theme.Dark else Theme.Light, background = true)
       ParticipantRowViewHolder(view, onClick)
     case ConversationName =>
       val view = LayoutInflater.from(parent.getContext).inflate(R.layout.conversation_name_row, parent, false)

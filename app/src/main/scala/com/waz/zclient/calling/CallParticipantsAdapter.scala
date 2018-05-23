@@ -28,9 +28,8 @@ import com.waz.zclient.ViewHelper.inflate
 import com.waz.zclient.calling.controllers.CallController
 import com.waz.zclient.calling.controllers.CallController.CallParticipantInfo
 import com.waz.zclient.common.controllers.ThemeController
+import com.waz.zclient.common.controllers.ThemeController.Theme
 import com.waz.zclient.common.views.SingleUserRowView
-import com.waz.zclient.common.views.SingleUserRowView.Theme
-import com.waz.zclient.common.views.SingleUserRowView.Theme.{Dark, Light, TransparentLight}
 import com.waz.zclient.paintcode.{ForwardNavigationIcon, GuestIconWithColor}
 import com.waz.zclient.ui.text.TypefaceTextView
 import com.waz.zclient.utils.ContextUtils.{getColor, getDrawable, getString, getStyledColor}
@@ -44,7 +43,7 @@ class CallParticipantsAdapter(implicit context: Context, eventContext: EventCont
   private var items = Seq.empty[CallParticipantInfo]
   private var numOfParticipants = 0
   private var maxRows = Option.empty[Int]
-  private var theme: Theme = Theme.TransparentDark
+  private var theme: Theme = Theme.Dark
 
   val onShowAllClicked = EventStream[Unit]()
 
@@ -69,9 +68,9 @@ class CallParticipantsAdapter(implicit context: Context, eventContext: EventCont
     notifyDataSetChanged()
   }
 
-  callController.darkTheme.map {
-    case true => Theme.TransparentDark
-    case _    => Theme.TransparentLight
+  callController.theme.map(_ == themeController.darkTheme).map {
+    case true => Theme.Dark
+    case _    => Theme.Light
   }.onUi { theme =>
     this.theme = theme
     notifyDataSetChanged()
@@ -116,7 +115,7 @@ object CallParticipantsAdapter {
 case class CallParticipantViewHolder(view: SingleUserRowView) extends ViewHolder(view) {
   def bind(callParticipantInfo: CallParticipantInfo, theme: Theme): Unit = {
     view.setCallParticipantInfo(callParticipantInfo)
-    view.setTheme(theme)
+    view.setTheme(theme, background = false)
     view.setSeparatorVisible(false)
   }
 }
@@ -135,13 +134,8 @@ case class ShowAllButtonViewHolder(view: View) extends ViewHolder(view) {
 
 
   private def setTheme(theme: Theme): Unit = {
-    val color = if (Set(Light, TransparentLight).contains(theme)) R.color.wire__text_color_primary_light_selector else R.color.wire__text_color_primary_dark_selector
+    val color = if (theme == Theme.Light) R.color.wire__text_color_primary_light_selector else R.color.wire__text_color_primary_dark_selector
     nameView.setTextColor(getColor(color))
-
-    theme match {
-      case Light => view.setBackgroundColor(getColor(R.color.background_light))
-      case Dark  => view.setBackgroundColor(getColor(R.color.background_dark))
-      case _     => view.setBackground(getDrawable(R.drawable.selector__transparent_button))
-    }
+    view.setBackground(getDrawable(R.drawable.selector__transparent_button))
   }
 }

@@ -55,14 +55,14 @@ class ControlsView(val context: Context, val attrs: AttributeSet, val defStyleAt
   // first row
   returning(findById[CallControlButtonView](R.id.mute_call)) { button =>
     button.set(WireStyleKit.drawMute, R.string.incoming__controls__ongoing__mute, mute)
-
-    controller.isMuted.onUi(button.setButtonPressed)
+    button.setEnabled(true)
+    controller.isMuted.onUi(button.setActivated)
   }
 
   returning(findById[CallControlButtonView](R.id.video_call)) { button =>
     button.set(WireStyleKit.drawCamera, R.string.incoming__controls__ongoing__video, video)
 
-    isVideoBeingSent.onUi(button.setButtonPressed)
+    isVideoBeingSent.onUi(button.setActivated)
 
     Signal(
       controller.isCallIncoming,
@@ -73,35 +73,40 @@ class ControlsView(val context: Context, val attrs: AttributeSet, val defStyleAt
     ).map {
       case (in, est, members, show, team) =>
         (est || in) && (show || team || members.size == 2) && members.size <= CallController.VideoCallMaxMembers
-    }.onUi(button.setButtonActive)
+    }.onUi(button.setEnabled)
   }
 
   returning(findById[CallControlButtonView](R.id.speaker_flip_call)) { button =>
     isVideoBeingSent.onUi {
       case true =>
         button.set(WireStyleKit.drawFlip, R.string.incoming__controls__ongoing__flip, flip)
-        button.setButtonPressed(false)
+        button.setEnabled(true)
       case false =>
         button.set(WireStyleKit.drawSpeaker, R.string.incoming__controls__ongoing__speaker, speaker)
-        controller.speakerButton.buttonState.onUi(button.setButtonPressed)
+        button.setEnabled(true)
+    }
+    Signal(controller.speakerButton.buttonState, isVideoBeingSent).onUi {
+      case (buttonState, false) => button.setActivated(buttonState)
+      case (_, true) => button.setActivated(false)
     }
   }
 
   // second row
   returning(findById[CallControlButtonView](R.id.reject_call)) { button =>
-    button.set(WireStyleKit.drawHangUpCall, R.string.empty_string, leave, ButtonColor.Red)
+    button.setEnabled(true)
+    button.set(WireStyleKit.drawHangUpCall, R.string.empty_string, leave, Some(ButtonColor.Red))
     incomingNotEstablished.onUi(button.setVisible)
   }
 
   returning(findById[CallControlButtonView](R.id.end_call)) { button =>
-    button.set(WireStyleKit.drawHangUpCall, R.string.empty_string, leave, ButtonColor.Red)
-
+    button.set(WireStyleKit.drawHangUpCall, R.string.empty_string, leave, Some(ButtonColor.Red))
+    button.setEnabled(true)
     incomingNotEstablished.map(!_).onUi(button.setVisible)
   }
 
   returning(findById[CallControlButtonView](R.id.accept_call)) { button =>
-    button.set(WireStyleKit.drawAcceptCall, R.string.empty_string, accept, ButtonColor.Green)
-
+    button.set(WireStyleKit.drawAcceptCall, R.string.empty_string, accept, Some(ButtonColor.Green))
+    button.setEnabled(true)
     incomingNotEstablished.onUi(button.setVisible)
   }
 

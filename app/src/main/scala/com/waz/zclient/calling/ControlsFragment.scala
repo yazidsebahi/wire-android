@@ -19,6 +19,7 @@ package com.waz.zclient.calling
 
 import android.app.AlertDialog
 import android.content.{Context, DialogInterface}
+import android.graphics.Color
 import android.os.Bundle
 import android.support.annotation.Nullable
 import android.support.v4.app.Fragment
@@ -26,6 +27,7 @@ import android.view._
 import com.waz.ZLog.ImplicitTag.implicitLogTag
 import com.waz.ZLog.verbose
 import com.waz.service.ZMessaging.clock
+import com.waz.service.call.Avs.VideoState
 import com.waz.utils._
 import com.waz.utils.events.{ClockSignal, Signal, Subscription}
 import com.waz.zclient.calling.controllers.CallController
@@ -33,6 +35,7 @@ import com.waz.zclient.calling.views.{CallingHeader, CallingMiddleLayout, Contro
 import com.waz.zclient.utils.RichView
 import com.waz.zclient.{FragmentHelper, R}
 import org.threeten.bp.Instant
+import com.waz.zclient.utils.ContextUtils._
 
 import scala.concurrent.duration._
 
@@ -56,6 +59,15 @@ class ControlsFragment extends FragmentHelper {
       (show, last) <- lastControlsClick.orElse(Signal.const((true, clock.instant())))
       display <- if (show) ClockSignal(3.seconds).map(c => last.max(est).until(c).asScala <= 3.seconds) else Signal.const(false)
     } yield display).orElse(Signal.const(true))
+
+
+  override def onCreate(savedInstanceState: Bundle): Unit = {
+    super.onCreate(savedInstanceState)
+    controller.allVideoReceiveStates.map(_.values.exists(_ == VideoState.Started)).onUi {
+      case true => getView.setBackgroundColor(getColor(R.color.calling_video_overlay))
+      case false => getView.setBackgroundColor(Color.TRANSPARENT)
+    }
+  }
 
   override def onCreateView(inflater: LayoutInflater, viewGroup: ViewGroup, savedInstanceState: Bundle): View =
     inflater.inflate(R.layout.fragment_calling_controls, viewGroup, false)

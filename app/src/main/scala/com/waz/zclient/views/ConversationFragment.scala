@@ -248,14 +248,15 @@ class ConversationFragment extends BaseFragment[ConversationFragment.Container] 
           isCallActive       = call.exists(_.convId == conv.id) && call.exists(_.account == acc)
           participantsNumber <- convController.participantsIds(conv.id).map(_.size)
           isTeam             <- accountsController.isTeam.head
-        } yield (isCallActive, participantsNumber, isTeam)).map {
-          case (true, _, _) =>
-            None
-          case (false, pn, team) if pn == 2 || (team && pn <= CallController.VideoCallMaxMembers) =>
+          isGroup            <- convController.isGroup(conv.id)
+        } yield {
+          if (isCallActive)
+            Option.empty[Int]
+          else if (!isGroup || (isTeam && participantsNumber <= CallController.VideoCallMaxMembers))
             Some(R.menu.conversation_header_menu_video)
-          case _ =>
+          else
             Some(R.menu.conversation_header_menu_audio)
-        }.foreach { id =>
+        }).foreach { id =>
           toolbar.getMenu.clear()
           id.foreach(toolbar.inflateMenu)
         }

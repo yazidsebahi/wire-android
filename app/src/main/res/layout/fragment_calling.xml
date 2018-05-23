@@ -18,10 +18,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -->
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.waz.zclient.common.controllers.ThemeControllingFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
              android:layout_width="match_parent"
              android:layout_height="match_parent"
-             xmlns:app="http://schemas.android.com/apk/res-auto">
+             xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/accent_green">
 
 
     <android.support.v7.widget.GridLayout
@@ -31,6 +32,7 @@
         app:rowCount="2"
         app:columnCount="2"
         app:orientation="horizontal"
+        android:background="@color/accent_blue"
         />
 
     <android.support.v7.widget.CardView
@@ -49,4 +51,4 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
-</FrameLayout>
+</com.waz.zclient.common.controllers.ThemeControllingFrameLayout>

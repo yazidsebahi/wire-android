@@ -18,7 +18,7 @@
 package com.waz.zclient.common.views
 
 import android.content.Context
-import android.support.v4.content.ContextCompat
+import android.graphics.drawable.ColorDrawable
 import android.support.v7.widget.AppCompatCheckBox
 import android.util.AttributeSet
 import android.view.{Gravity, View, ViewGroup}
@@ -28,8 +28,8 @@ import com.waz.model.{Availability, IntegrationData, TeamId, UserData}
 import com.waz.utils.events.{EventStream, SourceStream}
 import com.waz.utils.returning
 import com.waz.zclient.calling.controllers.CallController.CallParticipantInfo
-import com.waz.zclient.common.views.SingleUserRowView.Theme._
-import com.waz.zclient.common.views.SingleUserRowView._
+import com.waz.zclient.common.controllers.ThemeController.Theme
+import com.waz.zclient.common.controllers.{ThemeController, ThemedView}
 import com.waz.zclient.paintcode.{ForwardNavigationIcon, GuestIcon, VideoIcon}
 import com.waz.zclient.ui.text.TypefaceTextView
 import com.waz.zclient.utils.ContextUtils._
@@ -38,12 +38,12 @@ import com.waz.zclient.views.AvailabilityView
 import com.waz.zclient.{R, ViewHelper}
 import org.threeten.bp.Instant
 
-class SingleUserRowView(context: Context, attrs: AttributeSet, style: Int) extends RelativeLayout(context, attrs, style) with ViewHelper {
+class SingleUserRowView(context: Context, attrs: AttributeSet, style: Int) extends RelativeLayout(context, attrs, style) with ViewHelper with ThemedView {
   def this(context: Context, attrs: AttributeSet) = this(context, attrs, 0)
   def this(context: Context) = this(context, null, 0)
 
   inflate(R.layout.single_user_row_view)
-  setTheme(Light)
+  setTheme(Theme.Light, background = true)
 
   private lazy val chathead = findById[ChatheadView](R.id.chathead)
   private lazy val nameView = findById[TypefaceTextView](R.id.name_text)
@@ -57,6 +57,7 @@ class SingleUserRowView(context: Context, attrs: AttributeSet, style: Int) exten
   private lazy val auxContainer = findById[ViewGroup](R.id.aux_container)
 
   val onSelectionChanged: SourceStream[Boolean] = EventStream()
+  private var solidBackground = false
 
   checkbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener {
     override def onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean): Unit =
@@ -114,42 +115,21 @@ class SingleUserRowView(context: Context, attrs: AttributeSet, style: Int) exten
 
   def showCheckbox(show: Boolean): Unit = checkbox.setVisibility(if (show) View.VISIBLE else View.GONE)
 
-  //TODO: Proper colors and other stuff
-  def setTheme(theme: Theme): Unit = {
-    theme match {
-      case Light =>
-        returning(ContextCompat.getDrawable(getContext, R.drawable.checkbox_black)){ btn =>
-          btn.setLevel(1)
-          checkbox.setButtonDrawable(btn)
-        }
-        nameView.setTextColor(getColor(R.color.wire__text_color_primary_light_selector))
-        separator.setBackgroundColor(getStyledColor(R.attr.thinDividerColor))
-        setBackgroundColor(getColor(R.color.background_light))
-      case Dark =>
-        returning(ContextCompat.getDrawable(getContext, R.drawable.checkbox)){ btn =>
-          btn.setLevel(1)
-          checkbox.setButtonDrawable(btn)
-        }
-        nameView.setTextColor(getColor(R.color.wire__text_color_primary_dark_selector))
-        separator.setBackgroundColor(getStyledColor(R.attr.thinDividerColor))
-        setBackgroundColor(getColor(R.color.background_dark))
-      case TransparentDark =>
-        returning(ContextCompat.getDrawable(getContext, R.drawable.checkbox)){ btn =>
-          btn.setLevel(1)
-          checkbox.setButtonDrawable(btn)
-        }
-        nameView.setTextColor(getColor(R.color.wire__text_color_primary_dark_selector))
-        separator.setBackgroundColor(getColor(R.color.white_16))
-        setBackground(getDrawable(R.drawable.selector__transparent_button))
-      case TransparentLight =>
-        returning(ContextCompat.getDrawable(getContext, R.drawable.checkbox_black)){ btn =>
-          btn.setLevel(1)
-          checkbox.setButtonDrawable(btn)
-        }
-        nameView.setTextColor(getColor(R.color.wire__text_color_primary_light_selector))
-        separator.setBackgroundColor(getStyledColor(R.attr.thinDividerColor))
-        setBackground(getDrawable(R.drawable.selector__transparent_button))
+
+  override def setTheme(theme: ThemeController.Theme): Unit = setTheme(theme, solidBackground)
+
+  def setTheme(theme: ThemeController.Theme, background: Boolean): Unit = {
+    val (backgroundDrawable, checkboxDrawable) = (theme, background) match {
+      case (ThemeController.Theme.Light, true)  => (new ColorDrawable(getColor(R.color.background_light)), R.drawable.checkbox_black)
+      case (ThemeController.Theme.Dark, true)   => (new ColorDrawable(getColor(R.color.background_dark)), R.drawable.checkbox)
+      case (ThemeController.Theme.Light, false) => (getDrawable(R.drawable.selector__transparent_button), R.drawable.checkbox_black)
+      case (ThemeController.Theme.Dark, false)  => (getDrawable(R.drawable.selector__transparent_button), R.drawable.checkbox)
+      case _ => throw new IllegalArgumentException
     }
+    nameView.forceTheme(Some(inject[ThemeController].getTheme(theme)))
+    separator.setBackgroundColor(getStyledColor(R.attr.thinDividerColor))
+    setBackground(backgroundDrawable)
+    checkbox.setButtonDrawable(returning(getDrawable(checkboxDrawable))(_.setLevel(1)))
   }
 
   def setAvailability(availability: Availability): Unit =
@@ -164,15 +144,5 @@ class SingleUserRowView(context: Context, attrs: AttributeSet, style: Int) exten
       v.setLayoutParams(params)
       auxContainer.addView(v)
     }
-  }
-}
-
-object SingleUserRowView {
-  sealed trait Theme
-  object Theme {
-    object Light extends Theme
-    object Dark extends Theme
-    object TransparentDark extends Theme
-    object TransparentLight extends Theme
   }
 }
