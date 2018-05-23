@@ -27,6 +27,7 @@ import android.view._
 import com.waz.ZLog.ImplicitTag.implicitLogTag
 import com.waz.ZLog.verbose
 import com.waz.service.ZMessaging.clock
+import com.waz.service.call.CallInfo.CallState
 import com.waz.service.call.Avs.VideoState
 import com.waz.utils._
 import com.waz.utils.events.{ClockSignal, Signal, Subscription}
@@ -89,7 +90,8 @@ class ControlsFragment extends FragmentHelper {
     controller.callConvId.onChanged.onUi(_ => restart())
 
     (for {
-      incoming <- controller.isCallIncoming
+      state <- controller.callState
+      incoming = state == CallState.SelfJoining || state == CallState.OtherCalling
       Some(degradationText) <- controller.degradationWarningText
     } yield (incoming, degradationText)).onUi { case (incoming, degradationText) =>
       val builder = new AlertDialog.Builder(getActivity)
@@ -100,9 +102,7 @@ class ControlsFragment extends FragmentHelper {
         .setPositiveButton(if (incoming) android.R.string.ok else R.string.calling_ongoing_call_start_anyway, new DialogInterface.OnClickListener {
           override def onClick(dialog: DialogInterface, which: Int): Unit = controller.continueDegradedCall()
         })
-
-      if (!incoming)
-        builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener {
+        .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener {
           override def onClick(dialog: DialogInterface, which: Int): Unit = controller.leaveCall()
         })
 
