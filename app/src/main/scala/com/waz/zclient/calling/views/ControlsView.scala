@@ -17,20 +17,27 @@
  */
 package com.waz.zclient.calling.views
 
+import android.Manifest.permission.{CAMERA, RECORD_AUDIO}
 import android.content.Context
 import android.util.AttributeSet
 import android.widget.GridLayout
 import com.waz.ZLog.ImplicitTag.implicitLogTag
 import com.waz.ZLog._
+import com.waz.permissions.PermissionsService
 import com.waz.service.call.Avs.VideoState
+import com.waz.threading.Threading.Implicits.Ui
 import com.waz.utils.events.{EventStream, Signal}
 import com.waz.utils.returning
 import com.waz.zclient.calling.controllers.CallController
 import com.waz.zclient.calling.views.CallControlButtonView.ButtonColor
 import com.waz.zclient.common.controllers.UserAccountsController
 import com.waz.zclient.paintcode._
+import com.waz.zclient.utils.ContextUtils._
 import com.waz.zclient.utils.RichView
 import com.waz.zclient.{R, ViewHelper}
+
+import scala.async.Async._
+import scala.concurrent.Future
 
 class ControlsView(val context: Context, val attrs: AttributeSet, val defStyleAttr: Int) extends GridLayout(context, attrs, defStyleAttr) with ViewHelper {
   def this(context: Context, attrs: AttributeSet) = this(context, attrs, 0)
@@ -42,6 +49,7 @@ class ControlsView(val context: Context, val attrs: AttributeSet, val defStyleAt
 
   private lazy val controller = inject[CallController]
   private lazy val accountsController = inject[UserAccountsController]
+  private lazy val permissions = inject[PermissionsService]
 
   val onButtonClick = EventStream[Unit]
 
@@ -95,19 +103,26 @@ class ControlsView(val context: Context, val attrs: AttributeSet, val defStyleAt
 
   returning(findById[CallControlButtonView](R.id.end_call)) { button =>
     button.set(WireStyleKit.drawHangUpCall, R.string.empty_string, leave, ButtonColor.Red)
-
     incomingNotEstablished.map(!_).onUi(button.setVisible)
   }
 
   returning(findById[CallControlButtonView](R.id.accept_call)) { button =>
     button.set(WireStyleKit.drawAcceptCall, R.string.empty_string, accept, ButtonColor.Green)
-
     incomingNotEstablished.onUi(button.setVisible)
   }
 
-  private def accept(): Unit = {
-    onButtonClick ! {}
-    controller.continueDegradedCall()
+  private def accept(): Future[Unit] = async {
+      onButtonClick ! {}
+      val sendingVideo = await(controller.videoSendState.head) == VideoState.Started
+      val hasPerms = await(permissions.requestAllPermissions(if (sendingVideo) Set(CAMERA, RECORD_AUDIO) else Set(RECORD_AUDIO)))
+      val callingConvId = await(controller.callConvId.head)
+      val callingZms = await(controller.callingZms.head)
+
+      if (hasPerms) callingZms.calling.startCall(callingConvId, await(controller.isVideoCall.head))
+      else
+        showPermissionsErrorDialog(R.string.calling__cannot_start__title,
+          if (sendingVideo) R.string.calling__cannot_start__no_video_permission__message else R.string.calling__cannot_start__no_permission__message
+          ).flatMap(_ => callingZms.calling.endCall(callingConvId))
   }
 
   private def leave(): Unit = {
@@ -125,9 +140,16 @@ class ControlsView(val context: Context, val attrs: AttributeSet, val defStyleAt
     controller.speakerButton.press()
   }
 
-  private def video(): Unit = {
-    onButtonClick ! {}
-    controller.toggleVideo()
+  private def video(): Future[Unit] = async {
+    if (await(permissions.requestAllPermissions(Set(CAMERA))))
+      Future.successful {
+        onButtonClick ! {}
+        controller.toggleVideo()
+      }
+    else
+      showPermissionsErrorDialog(R.string.calling__cannot_start__title,
+        R.string.calling__cannot_start__no_video_permission__message
+      )
   }
 
   private def mute(): Unit = {
