@@ -165,4 +165,55 @@ object ContextUtils {
     dialog.show()
     p.future
   }
+
+  def showConfirmationDialog(title:    String,
+                             msg:      String,
+                             positiveRes: Int = android.R.string.ok,
+                             negativeRes: Int = android.R.string.cancel)
+                            (implicit context: Context): Future[Boolean] = {
+    val p = Promise[Boolean]()
+    val dialog = new AlertDialog.Builder(context)
+      .setTitle(title)
+      .setMessage(msg)
+      .setPositiveButton(positiveRes, new DialogInterface.OnClickListener {
+        override def onClick(dialog: DialogInterface, which: Int) = p.complete(Success(true))
+      })
+      .setNegativeButton(negativeRes, new DialogInterface.OnClickListener() {
+        def onClick(dialog: DialogInterface, which: Int): Unit = dialog.cancel()
+      })
+      .setOnCancelListener(new DialogInterface.OnCancelListener {
+        override def onCancel(dialog: DialogInterface) = p.complete(Success(false))
+      })
+      .create
+    dialog.show()
+    p.future
+  }
+
+  //TODO come up with a tidier way of doing this.
+  def showConfirmationDialogWithNeutralButton(title:          Int,
+                                              msg:            Int,
+                                              neutralRes:     Int,
+                                              positiveRes:    Int = android.R.string.ok,
+                                              negativeRes:    Int = android.R.string.cancel)
+                                             (implicit context: Context): Future[Option[Boolean]] = {
+    val p = Promise[Option[Boolean]]()
+    val dialog = new AlertDialog.Builder(context)
+      .setTitle(title)
+      .setMessage(msg)
+      .setPositiveButton(positiveRes, new DialogInterface.OnClickListener {
+        override def onClick(dialog: DialogInterface, which: Int) = p.trySuccess(Some(true))
+      })
+      .setNegativeButton(negativeRes, new DialogInterface.OnClickListener() {
+        def onClick(dialog: DialogInterface, which: Int): Unit = dialog.cancel()
+      })
+      .setNeutralButton(neutralRes, new DialogInterface.OnClickListener {
+        override def onClick(dialog: DialogInterface, which: Int) = p.trySuccess(None)
+      })
+      .setOnCancelListener(new DialogInterface.OnCancelListener {
+        override def onCancel(dialog: DialogInterface) = p.trySuccess(Some(false))
+      })
+      .create
+    dialog.show()
+    p.future
+  }
 }
