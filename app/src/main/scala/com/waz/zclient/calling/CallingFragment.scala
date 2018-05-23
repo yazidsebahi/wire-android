@@ -33,6 +33,7 @@ import com.waz.threading.SerialDispatchQueue
 import com.waz.utils.events.Signal
 import com.waz.utils.returning
 import com.waz.zclient.calling.controllers.CallController
+import com.waz.zclient.common.controllers.ThemeController
 import com.waz.zclient.common.views.BackgroundDrawable
 import com.waz.zclient.common.views.ImageController.{ImageSource, WireImage}
 import com.waz.zclient.ui.utils.ColorUtils
